@@ -1,0 +1,4836 @@
+BRGVersion:6
+revision:$Revision$
+UUID:f79a1b0d-b564-4bcf-9d59-3c8265372400
+timestamp:1580739293
+baselib:core
+baselib:inFlow
+baselib:lal1
+baselib:utils
+
+begin:graphprops
+propdef:GLM_DB_USER|string|3||None
+propdef:GLM_DB_PASSWORD|string|3||None
+propdef:GLM_DB_SERVICE|string|3||None
+propdef:GLM_DB_INTERFACE|string|3||None
+propdef:EMEA_DEV1_DB_USER|string|3||None
+propdef:EMEA_DEV1_DB_PASSWORD|string|3||None
+propdef:EMEA_DEV1_DB_SERVICE|string|3||None
+propdef:EMEA_DEV1_DB_INTERFACE|string|3||None
+propdef:IFO_DB_USER|string|3||None
+propdef:IFO_DB_PASSWORD|string|3||None
+propdef:IFO_DB_URL|string|3||None
+propdef:IFO_DRIVER|string|3||None
+propdef:AMS_DB_USER|string|3||None
+propdef:AMS_DB_PASSWORD|string|3||None
+propdef:AMS_DB_SERVICE|string|3||None
+propdef:AMS_DB_INTERFACE|string|3||None
+propdef:CILPD_DB_USER|string|3||None
+propdef:CILPD_DB_PASSWORD|string|3||None
+propdef:CILPD_DB_SERVICE|string|3||None
+propdef:CILPD_DB_INTERFACE|string|3||None
+propdef:DL_MIGRATION|string|3||None
+propdef:AMO_DB_USER|string|3||None
+propdef:AMO_DB_PASSWORD|string|3||None
+propdef:AMO_DB_URL|string|3||None
+propdef:AMO_DB_DRIVER|string|3||None
+end:graphprops
+
+node:Stage_90_AutoQuote_Fallout_Report_Data
+bretype:core::Composite
+editor:Label=Stage 90% Auto-Quote Fallout Report Data
+editor:handle=5ad7ab8a55ed5aa0
+editor:sortkey=5ad7ab8a55ed5aa0
+inclockxy:Inclock=110,50
+outclockxy:Outclock=230,50
+ineventxy:InEvent=20,200
+outeventxy:OutEvent=400,200
+editor:XY=320,130
+node:Static_Data
+bretype:core::Static Data
+editor:handle=5c9cedb25d3a1b0e
+editor:sortkey=56e2f616314f3e7a
+output:@40fe6c55598828e5/=
+inclock:/=Execute_System_Command_3
+inclock:/=Execute_System_Command
+inclock:/=AMS_Detail2
+inclock:/=AMS_Quotable_Data
+prop:StaticData=<<EOX
+email,subject,message
+laurel.dumonteil@centurylink.com; lee.winslade@centurylink.com,AMS Auto Quote Fallout Report,AMS Auto Quote Fallout Report graph completed.
+EOX
+editor:XY=790,170
+end:Static_Data
+
+node:Dynamic_Email_wfile
+bretype:utils::Dynamic Email w/file
+editor:handle=5c9cedb2691d44ba
+editor:sortkey=56e2f67e0fcb5693
+input:@4fdf8a4f3e7b7b11/=Static_Data.40fe6c55598828e5
+output:@4fdf8a53751436e8/=
+prop:fromemail=NoReply@centurylink.com
+editor:XY=940,170
+end:Dynamic_Email_wfile
+
+node:Stage_Mapping_Data
+bretype:core::Composite
+editor:Label=Stage Mapping Data
+editor:handle=5ade00343d04058e
+editor:sortkey=5ade00343d04058e
+inclock:/=PATH_PRESTAGE
+inclockxy:Inclock=110,50
+outclockxy:Outclock=230,50
+ineventxy:InEvent=20,200
+outeventxy:OutEvent=400,200
+editor:XY=170,170
+node:Import_VENDOR_CODE_MAPPING
+bretype:core::Composite
+editor:Label=Import VENDOR_CODE_MAPPING
+editor:handle=5addfd700b447dc7
+editor:sortkey=5addfd700b447dc7
+inclockxy:Inclock=60,50
+outclockxy:Outclock=180,50
+ineventxy:InEvent=20,200
+outeventxy:OutEvent=400,200
+editor:XY=180,190
+node:VENDOR_CODE_MAPPINGxlsx
+bretype:core::Excel File
+editor:Label=VENDOR_CODE_MAPPING.xlsx
+editor:handle=5ada092f70561168
+editor:sortkey=528514800bad0528
+output:@48cf6cd2305e5f95/Vendor Code Mapping Info=
+inclock:/=L_VENDOR_MAPPING
+prop:File=//lavastorm/migr/Training/AMS/BuildingLists/VENDOR_CODE_MAPPING.xlsx
+prop:SubstituteInvalidChars=true
+prop:WorkbookSpec=<<EOX
+<workbook>
+
+<sheet name="Sheet1"  outputIndex="1" />
+
+</workbook>
+EOX
+editor:XY=360,199
+end:VENDOR_CODE_MAPPINGxlsx
+
+node:L_VENDOR_MAPPING
+bretype:core::DB Truncate
+editor:Label=L_VENDOR_MAPPING
+editor:handle=5ada092f3c7565fc
+editor:sortkey=586b77c00cf574f4_5
+prop:CleanResults=ALL
+prop:DbInterface=OCI
+encrypted:simple=nFZhmIpYZmvjMtRGF8lNF90Au1X/rz4=
+prop:DbService=GNIDEV1
+prop:DbUser=EMEA_AMS
+prop:Script=<<EOX
+resultValue = "{{^CleanResults^}}".trim().toUpper().switch(
+	"NONE", false,
+	"ALL", sqlNonSelect("truncate table {{^Table^}}"),
+	"TODAY", sqlNonSelect("delete from {{^Table^}} where to_char({{^DateColumn=DATE_COLUMN_NOT_SET^}}, 'YYYYMMDD') = to_char(SYSDATE,'YYYYMMDD') "),
+	sqlNonSelect("delete from {{^Table^}} where {{^DateColumn=DATE_COLUMN_NOT_SET^}} = TO_DATE('{{^CleanResults^}}','YYYY-MM-DD') ")
+)
+	
+EOX
+prop:Table=L_VENDOR_MAPPING
+editor:XY=170,199
+end:L_VENDOR_MAPPING
+
+node:INSERT_INTO_L_VENDOR_MAPPING
+bretype:core::DB Execute
+editor:Label=INSERT INTO L_VENDOR_MAPPING
+editor:handle=5ada092f49ac266d
+editor:sortkey=589034931f3c79f3_5
+input:589034fa78ca3f43/out1=Filter.40fd2c7420761db6
+prop:DbInterface=oci
+encrypted:simple=nFZhmIpYZmvjMtRGF8lNF90Au1X/rz4=
+prop:DbService=GNIDEV1
+prop:DbUser=EMEA_AMS
+prop:Query=<<EOX
+insert into  L_VENDOR_MAPPING
+(
+ VENDOR_CODE,
+ VENDOR_NAME,
+ COUNTRY_2CODE,
+CREATE_DATETIME
+)
+values(:1,:2,:3,SYSDATE)
+EOX
+prop:Script=<<EOX
+sqlNonSelect
+(
+  "{{^Query^}}",
+ VENDOR_CODE,
+ VENDOR_NAME,
+ COUNTRY_2CODE
+
+
+)
+EOX
+editor:XY=730,199
+editor:propdef=Query|sql|1||None
+end:INSERT_INTO_L_VENDOR_MAPPING
+
+node:Filter
+bretype:core::Filter
+editor:handle=5ada092f2f06501e
+editor:sortkey=58bfa56a53f005e1_2
+input:@40fd2c74167f1ca2/=VENDOR_CODE_MAPPINGxlsx.48cf6cd2305e5f95
+output:@40fd2c7420761db6/=
+prop:Script=<<EOX
+
+emit 
+ VendorCode as VENDOR_CODE,
+ VendorName as VENDOR_NAME,
+ Country as COUNTRY_2CODE
+
+EOX
+editor:XY=580,199
+end:Filter
+
+box:
+label:Import VENDOR_CODE_MAPPING.xlsx from EXCEL
+rect:200,320,590,30
+backgroundcolor:13434879
+editor:notes=This spreadsheet is provided by Dumonteil, Laurel <Laurel.Dumonteil@level3.com>
+end:
+end:Import_VENDOR_CODE_MAPPING
+
+node:Import_L_REF_COUNTRY_REGION
+bretype:core::Composite
+editor:Label=Import L_REF_COUNTRY_REGION
+editor:handle=5addfe3a04480b9c
+editor:sortkey=5addfe3a04480b9c
+inclockxy:Inclock=110,50
+outclockxy:Outclock=230,50
+ineventxy:InEvent=20,200
+outeventxy:OutEvent=400,200
+editor:XY=340,190
+node:L_REF_COUNTRY_REGION
+bretype:core::DB Truncate
+editor:Label=L_REF_COUNTRY_REGION
+editor:handle=5ad897a559402df0
+editor:sortkey=586b77c00cf574f4_3
+prop:CleanResults=ALL
+prop:DbInterface=OCI
+encrypted:simple=nFZhmIpYZmvjMtRGF8lNF90Au1X/rz4=
+prop:DbService=GNIDEV1
+prop:DbUser=EMEA_AMS
+prop:Script=<<EOX
+resultValue = "{{^CleanResults^}}".trim().toUpper().switch(
+	"NONE", false,
+	"ALL", sqlNonSelect("truncate table {{^Table^}}"),
+	"TODAY", sqlNonSelect("delete from {{^Table^}} where to_char({{^DateColumn=DATE_COLUMN_NOT_SET^}}, 'YYYYMMDD') = to_char(SYSDATE,'YYYYMMDD') "),
+	sqlNonSelect("delete from {{^Table^}} where {{^DateColumn=DATE_COLUMN_NOT_SET^}} = TO_DATE('{{^CleanResults^}}','YYYY-MM-DD') ")
+)
+	
+EOX
+prop:Table=L_REF_COUNTRY_REGION
+editor:XY=150,170
+end:L_REF_COUNTRY_REGION
+
+node:INSERT_INTO_REF_Country_Region
+bretype:core::DB Execute
+editor:Label=INSERT INTO REF_Country_Region
+editor:handle=5ad8985d5dc71fe4
+editor:sortkey=589034931f3c79f3_3
+input:589034fa78ca3f43/out1=Filter.40fd2c7420761db6
+prop:DbInterface=oci
+encrypted:simple=nFZhmIpYZmvjMtRGF8lNF90Au1X/rz4=
+prop:DbService=GNIDEV1
+prop:DbUser=EMEA_AMS
+prop:Query=<<EOX
+insert into  L_REF_COUNTRY_REGION
+(
+COUNTRY_CODE,
+COUNTRY_CODE_2CHAR,
+COUNTRY_NAME,
+GLOBAL_REGION,
+CREATE_DATETIME
+)
+values(:1,:2,:3,:4,SYSDATE)
+EOX
+prop:Script=<<EOX
+sqlNonSelect
+(
+  "{{^Query^}}",
+COUNTRY_CODE,
+COUNTRY_CODE_2CHAR,
+COUNTRY_NAME,
+GLOBAL_REGION
+
+
+)
+EOX
+editor:XY=710,170
+editor:propdef=Query|sql|1||None
+end:INSERT_INTO_REF_Country_Region
+
+node:Filter
+bretype:core::Filter
+editor:handle=5ad899c054037135
+editor:sortkey=58bfa56a53f005e1
+input:@40fd2c74167f1ca2/=JDBCJVT_logon_AMO.439f475045133ba6
+output:@40fd2c7420761db6/=
+prop:Script=<<EOX
+
+emit 
+ CountryCode as COUNTRY_CODE,
+ CountryCode2Char as COUNTRY_CODE_2CHAR,
+ CountryName as COUNTRY_NAME,
+ GlobalRegion as GLOBAL_REGION
+EOX
+editor:XY=560,170
+end:Filter
+
+node:JDBCJVT_logon_AMO
+bretype:core::JDBC Query
+editor:Label=JDBC-JVT logon- AMO
+editor:handle=5ada10da541c5eac
+editor:sortkey=5acfbd000662548d
+output:@439f475045133ba6/=
+inclock:/=L_REF_COUNTRY_REGION
+prop:DbDriver={{^AMO_DB_DRIVER^}}
+encrypted:simple=nFZhmIpYZmvjMtRGF8lNF8JPgXbTxGsCcjvfWKWKvVwAOXj1jY8=
+prop:DbUrl={{^AMO_DB_URL^}}
+prop:DbUser={{^AMO_DB_USER^}}
+prop:SqlQuery=<<EOX
+SELECT distinct CountryCode
+      ,CountryCode2Char
+      ,UPPER(CountryName) CountryName
+      ,GlobalRegion
+      ,DateLoaded
+  FROM REF_Country_Region
+  order by CountryCode
+     
+EOX
+editor:XY=370,170
+editor:Notes=Original: 
+editor:Notes=jdbc:jtds:sqlserver://localhost;databaseName=yourDBName;instance=yourInstance;domain=yourDomainName;useNTLMv2=true
+end:JDBCJVT_logon_AMO
+
+box:
+label:Import REF_Country_Region from AMO
+rect:210,300,460,30
+backgroundcolor:13434879
+editor:notes=This data comes from AMO database on server USIDCVSQL0041
+end:
+end:Import_L_REF_COUNTRY_REGION
+
+node:Import_L_REF_COUNTRY_INTL
+bretype:core::Composite
+editor:Label=Import L_REF_COUNTRY_INTL
+editor:handle=5addff5f464c00a7
+editor:sortkey=5addff5f464c00a7
+inclockxy:Inclock=110,50
+outclockxy:Outclock=230,50
+ineventxy:InEvent=20,200
+outeventxy:OutEvent=400,200
+editor:XY=500,190
+node:L_REF_COUNTRY_INTL
+bretype:core::DB Truncate
+editor:Label=L_REF_COUNTRY_INTL
+editor:handle=5ada16b225d776b7
+editor:sortkey=586b77c00cf574f4_6
+prop:CleanResults=ALL
+prop:DbInterface=OCI
+encrypted:simple=nFZhmIpYZmvjMtRGF8lNF90Au1X/rz4=
+prop:DbService=GNIDEV1
+prop:DbUser=EMEA_AMS
+prop:Script=<<EOX
+resultValue = "{{^CleanResults^}}".trim().toUpper().switch(
+	"NONE", false,
+	"ALL", sqlNonSelect("truncate table {{^Table^}}"),
+	"TODAY", sqlNonSelect("delete from {{^Table^}} where to_char({{^DateColumn=DATE_COLUMN_NOT_SET^}}, 'YYYYMMDD') = to_char(SYSDATE,'YYYYMMDD') "),
+	sqlNonSelect("delete from {{^Table^}} where {{^DateColumn=DATE_COLUMN_NOT_SET^}} = TO_DATE('{{^CleanResults^}}','YYYY-MM-DD') ")
+)
+	
+EOX
+prop:Table=L_REF_COUNTRY_INTL
+editor:XY=180,180
+end:L_REF_COUNTRY_INTL
+
+node:INSERT_INTO_L_REF_COUNTRY_INTL
+bretype:core::DB Execute
+editor:Label=INSERT INTO L_REF_COUNTRY_INTL
+editor:handle=5ada16b229a8101e
+editor:sortkey=589034931f3c79f3_6
+input:589034fa78ca3f43/out1=AMS_Data_2.40fd2c7444283da6
+prop:DbInterface=oci
+encrypted:simple=nFZhmIpYZmvjMtRGF8lNF90Au1X/rz4=
+prop:DbService=GNIDEV1
+prop:DbUser=EMEA_AMS
+prop:Query=<<EOX
+insert into  L_REF_COUNTRY_INTL
+(
+COUNTRY_CODE,
+CREATE_DATETIME
+)
+values(:1,SYSDATE)
+EOX
+prop:Script=<<EOX
+sqlNonSelect
+(
+  "{{^Query^}}",
+COUNTRYCODE
+
+)
+EOX
+editor:XY=740,180
+editor:propdef=Query|sql|1||None
+end:INSERT_INTO_L_REF_COUNTRY_INTL
+
+node:AMS_Data_2
+bretype:core::DB Query
+editor:Label=AMS Data
+editor:handle=5ada16b240206238
+editor:sortkey=5ad0dc971c64651c_4
+output:@40fd2c7444283da6/=
+inclock:/=L_REF_COUNTRY_INTL
+prop:DbInterface=oci
+encrypted:simple=nFZhmIpYZmvjMtRGF8lNF95EgFv7/VEqAVa8E/==
+prop:DbService=AMSPRF1.LEVEL3.COM
+prop:DbUser=Guardiola_Phillip
+prop:SqlQuery=<<EOX
+select distinct lic.countrycode from NDATARIFFS.L_INTL_CAPBUILDING lic
+order by lic.countrycode
+
+EOX
+editor:XY=370,180
+end:AMS_Data_2
+
+box:
+label:Import L_REF_COUNTRY_INTL country code list from AMS
+rect:180,310,600,30
+backgroundcolor:13434879
+editor:notes=Unique list comes directly from AMS NDATARIFFS.L_INTL_CAPBUILDING
+end:
+end:Import_L_REF_COUNTRY_INTL
+
+end:Stage_Mapping_Data
+
+node:Stage_Data_from_IFO__AMS__SM__GLM
+bretype:core::Composite
+editor:Label=Stage Data from IFO - AMS - SM - GLM
+editor:handle=5ade0a7a7d41236e
+editor:sortkey=5ade0a7a7d41236e
+inclock:/=PATH_PRESTAGE
+inclock:/=Stage_Mapping_Data
+inclockxy:Inclock=110,50
+outclockxy:Outclock=230,50
+ineventxy:InEvent=20,200
+outeventxy:OutEvent=400,200
+editor:XY=320,170
+node:SCENARIO_MANAGER
+bretype:core::Composite
+editor:Label=SCENARIO MANAGER
+editor:handle=5dd59c895f4616cf
+editor:sortkey=5ade0b5c64382dd7
+inclock:/=IFO
+inclockxy:Inclock=110,50
+outclockxy:Outclock=230,50
+ineventxy:InEvent=20,200
+outeventxy:OutEvent=400,200
+editor:XY=520,450
+node:L_SCENARIO_MANAGER
+bretype:core::DB Truncate
+editor:Label=L_SCENARIO_MANAGER
+editor:handle=5dd59c8968d84285
+editor:sortkey=586b77c00cf574f4
+prop:CleanResults=ALL
+prop:DbInterface={{^EMEA_DEV1_DB_INTERFACE^}}
+encrypted:simple=nFZhmIpYZmvjMtRGF8lNF8JPgXLTznUZdCHZKKmdqEwCPHXbp8rf0q5nfic=
+prop:DbService={{^EMEA_DEV1_DB_SERVICE^}}
+prop:DbUser={{^EMEA_DEV1_DB_USER^}}
+prop:Script=<<EOX
+resultValue = "{{^CleanResults^}}".trim().toUpper().switch(
+	"NONE", false,
+	"ALL", sqlNonSelect("truncate table {{^Table^}}"),
+	"TODAY", sqlNonSelect("delete from {{^Table^}} where to_char({{^DateColumn=DATE_COLUMN_NOT_SET^}}, 'YYYYMMDD') = to_char(SYSDATE,'YYYYMMDD') "),
+	sqlNonSelect("delete from {{^Table^}} where {{^DateColumn=DATE_COLUMN_NOT_SET^}} = TO_DATE('{{^CleanResults^}}','YYYY-MM-DD') ")
+)
+	
+EOX
+prop:Table=L_SCENARIO_MANAGER
+editor:XY=130,160
+end:L_SCENARIO_MANAGER
+
+node:INSERT_INTO_L_SCENARIO_MANAGER
+bretype:core::DB Execute
+editor:Label=INSERT INTO L_SCENARIO_MANAGER
+editor:handle=5dd59c89591631cb
+editor:sortkey=589034931f3c79f3
+input:589034fa78ca3f43/out1=CODS__CILPD.40fd2c7444283da6
+prop:DbInterface={{^EMEA_DEV1_DB_INTERFACE^}}
+encrypted:simple=nFZhmIpYZmvjMtRGF8lNF8JPgXLTznUZdCHZKKmdqEwCPHXbp8rf0q5nfic=
+prop:DbService={{^EMEA_DEV1_DB_SERVICE^}}
+prop:DbUser={{^EMEA_DEV1_DB_USER^}}
+prop:Query=<<EOX
+insert into  L_SCENARIO_MANAGER
+(MONTH_NAME,
+QUOTE_NUMBER,
+QUOTING_SYSTEM,
+PRODUCT_PACKAGE,
+LINE_ITEM_ID,
+PRODUCT,
+CHILD_PRODUCT,
+BANDWIDTH,
+SUB_BANDWIDTH,
+QUOTE_DATE,
+PL_ID,
+ADDR_LINE1,
+CITY,
+POST_CODE,
+COUNTRY,
+REGION,
+QUOTE_TYPE,
+VENDOR,
+PRICETERMID,
+OFFNET_SOLUTION_SOURCE_NAME,
+SOLUTION_ID,
+ISBUDGETARY,
+ISDIVERSITY,
+MRC,
+NRC,
+CURRENCYCODE,
+USD_TOTAL_MRC_AMT,
+USD_TOTAL_NRC_AMT,
+CREATE_DATETIME
+)
+values(:1,:2,:3,:4,:5,:6,:7,:8,:9,:10,:11,:12,:13,:14,:15,:16,:17,:18,:19,:20,:21,:22,:23,:24,:25,:26,:27,:28,SYSDATE)
+EOX
+prop:Script=<<EOX
+sqlNonSelect
+(
+  "{{^Query^}}",
+ MONTH_NAME,
+QUOTE_NUMBER,
+QUOTING_SYSTEM,
+PRODUCT_PACKAGE,
+LINE_ITEM_ID,
+PRODUCT,
+CHILD_PRODUCT,
+BANDWIDTH,
+SUB_BANDWIDTH,
+QUOTE_DATE,
+PL_ID,
+ADDR_LINE1,
+CITY,
+POST_CODE,
+COUNTRY,
+REGION,
+QUOTE_TYPE,
+VENDOR,
+PRICETERMID,
+OFFNET_SOLUTION_SOURCE_NAME,
+SOLUTION_ID,
+ISBUDGETARY,
+ISDIVERSITY,
+MRC,
+NRC,
+CURRENCYCODE,
+USD_TOTAL_MRC_AMT,
+USD_TOTAL_NRC_AMT
+)
+EOX
+editor:XY=490,160
+editor:Notes=Insert SM data into L_SCENARIO_MANAGER.
+editor:propdef=Query|sql|1||None
+end:INSERT_INTO_L_SCENARIO_MANAGER
+
+node:Update_COUNTRY_CODE_A
+bretype:core::Composite
+editor:Label=Update COUNTRY_CODE_A
+editor:handle=5dd59c897ce45ca0
+editor:sortkey=58a6e8f727d41704
+inclock:/=INSERT_INTO_L_SCENARIO_MANAGER
+inclockxy:Inclock=50,40
+outclockxy:Outclock=150,40
+ineventxy:InEvent=50,373270
+outeventxy:OutEvent=700,373320
+prop:Enabled=false
+editor:XY=670,160
+node:UPDATE_COUNTRY_CODE_Z
+bretype:core::DB Execute
+editor:Label=UPDATE COUNTRY_CODE_Z
+editor:handle=5dd59c8978463af0
+editor:sortkey=4c72e1a271016c13
+input:4c72e1a27a7806e9/=Filter_2.40fd2c7420761db6
+prop:CommitFrequency=1000
+prop:DbInterface={{^EMEA_DEV1_DB_INTERFACE^}}
+encrypted:simple=nFZhmIpYZmvjMtRGF8lNF8JPgXLTznUZdCHZKKmdqEwCPHXbp8rf0q5nfic=
+prop:DbService={{^EMEA_DEV1_DB_SERVICE^}}
+prop:DbUser={{^EMEA_DEV1_DB_USER^}}
+prop:Query=<<EOX
+UPDATE    L_SCENARIO_MANAGER
+SET COUNTRY_CODE_Z=:1
+where LOC_Z_COUNTRY = :2
+
+  
+EOX
+prop:Script=<<EOX
+sqlNonSelect
+  (
+  "{{^Query^}}",
+  COUNTRY_CODE,
+  LOC_Z_COUNTRY
+  
+   )
+EOX
+editor:XY=700,260
+editor:Notes=sed - 6/19/13 - dropped AUTO_AUGMENT column from table
+editor:propdef=Query|sql|1||None
+end:UPDATE_COUNTRY_CODE_Z
+
+node:UPDATE_COUNTRY_CODE_A_2
+bretype:core::DB Execute
+editor:Label=UPDATE COUNTRY_CODE_A
+editor:handle=5dd59c891f8c639b
+editor:sortkey=4c72e1a271016c13_2
+input:4c72e1a27a7806e9/=Filter_3.40fd2c7420761db6
+prop:CommitFrequency=1000
+prop:DbInterface={{^EMEA_DEV1_DB_INTERFACE^}}
+encrypted:simple=nFZhmIpYZmvjMtRGF8lNF8JPgXLTznUZdCHZKKmdqEwCPHXbp8rf0q5nfic=
+prop:DbService={{^EMEA_DEV1_DB_SERVICE^}}
+prop:DbUser={{^EMEA_DEV1_DB_USER^}}
+prop:Query=<<EOX
+UPDATE    L_SCENARIO_MANAGER
+SET COUNTRY_CODE_A=:1
+where LOC_A_COUNTRY = :2
+
+  
+EOX
+prop:Script=<<EOX
+sqlNonSelect
+  (
+  "{{^Query^}}",
+  COUNTRY_CODE_2CHAR,
+  LOC_A_COUNTRY
+  
+   )
+EOX
+editor:XY=700,430
+editor:Notes=sed - 6/19/13 - dropped AUTO_AUGMENT column from table
+editor:propdef=Query|sql|1||None
+end:UPDATE_COUNTRY_CODE_A_2
+
+node:UPDATE_COUNTRY_CODE_Z_2
+bretype:core::DB Execute
+editor:Label=UPDATE COUNTRY_CODE_Z
+editor:handle=5dd59c891abb20a7
+editor:sortkey=4c72e1a271016c13_3
+input:4c72e1a27a7806e9/=Filter_5.40fd2c7420761db6
+prop:CommitFrequency=1000
+prop:DbInterface={{^EMEA_DEV1_DB_INTERFACE^}}
+encrypted:simple=nFZhmIpYZmvjMtRGF8lNF8JPgXLTznUZdCHZKKmdqEwCPHXbp8rf0q5nfic=
+prop:DbService={{^EMEA_DEV1_DB_SERVICE^}}
+prop:DbUser={{^EMEA_DEV1_DB_USER^}}
+prop:Query=<<EOX
+UPDATE    L_SCENARIO_MANAGER
+SET COUNTRY_CODE_Z=:1
+where LOC_Z_COUNTRY = :2
+
+  
+EOX
+prop:Script=<<EOX
+sqlNonSelect
+  (
+  "{{^Query^}}",
+  COUNTRY_CODE_2CHAR,
+  LOC_Z_COUNTRY
+  
+   )
+EOX
+editor:XY=690,580
+editor:Notes=sed - 6/19/13 - dropped AUTO_AUGMENT column from table
+editor:propdef=Query|sql|1||None
+end:UPDATE_COUNTRY_CODE_Z_2
+
+node:UPDATE_COUNTRY_CODE_A
+bretype:core::DB Execute
+editor:Label=UPDATE COUNTRY_CODE_A
+editor:handle=5dd59c892d6a0a39
+editor:sortkey=4c72e1a271016c13_6
+input:4c72e1a27a7806e9/=Filter.40fd2c7420761db6
+prop:CommitFrequency=1000
+prop:DbInterface={{^EMEA_DEV1_DB_INTERFACE^}}
+encrypted:simple=nFZhmIpYZmvjMtRGF8lNF8JPgXLTznUZdCHZKKmdqEwCPHXbp8rf0q5nfic=
+prop:DbService={{^EMEA_DEV1_DB_SERVICE^}}
+prop:DbUser={{^EMEA_DEV1_DB_USER^}}
+prop:Query=<<EOX
+UPDATE    L_SCENARIO_MANAGER
+SET COUNTRY_CODE_A=:1
+where LOC_A_COUNTRY = :2
+
+  
+EOX
+prop:Script=<<EOX
+sqlNonSelect
+  (
+  "{{^Query^}}",
+  COUNTRY_CODE,
+  LOC_A_COUNTRY
+  
+   )
+EOX
+editor:XY=700,100
+editor:Notes=sed - 6/19/13 - dropped AUTO_AUGMENT column from table
+editor:propdef=Query|sql|1||None
+end:UPDATE_COUNTRY_CODE_A
+
+node:Filter
+bretype:core::Filter
+editor:handle=5dd59c890e7305ff
+editor:sortkey=5890814318c32f86
+input:@40fd2c74167f1ca2/=select_Query_on_L_SCENARIO_MANAGER_3.40fd2c7444283da6
+output:@40fd2c7420761db6/=
+prop:Script=<<EOX
+     
+    
+emit COUNTRY_CODE, LOC_A_COUNTRY
+
+
+EOX
+editor:XY=410,100
+end:Filter
+
+node:Filter_2
+bretype:core::Filter
+editor:handle=5dd59c89561e372c
+editor:sortkey=5890814318c32f86_2
+input:@40fd2c74167f1ca2/=select_Query_on_L_SCENARIO_MANAGER_2.40fd2c7444283da6
+output:@40fd2c7420761db6/=
+prop:Script=<<EOX
+     
+    
+emit COUNTRY_CODE, LOC_Z_COUNTRY
+
+
+EOX
+editor:XY=410,260
+end:Filter_2
+
+node:Filter_3
+bretype:core::Filter
+editor:handle=5dd59c897eb10b44
+editor:sortkey=5890814318c32f86_3
+input:@40fd2c74167f1ca2/=select_Query_on_L_SCENARIO_MANAGER.40fd2c7444283da6
+output:@40fd2c7420761db6/=
+prop:Script=<<EOX
+     
+    
+emit COUNTRY_CODE_2CHAR, LOC_A_COUNTRY
+
+
+EOX
+editor:XY=410,430
+end:Filter_3
+
+node:Filter_5
+bretype:core::Filter
+editor:handle=5dd59c8912933240
+editor:sortkey=5890814318c32f86_4
+input:@40fd2c74167f1ca2/=select_Query_on_L_SCENARIO_MANAGER_4.40fd2c7444283da6
+output:@40fd2c7420761db6/=
+prop:Script=<<EOX
+     
+    
+emit COUNTRY_CODE_2CHAR, LOC_Z_COUNTRY
+
+
+EOX
+editor:XY=400,580
+end:Filter_5
+
+node:select_Query_on_L_SCENARIO_MANAGER_3
+bretype:core::DB Query
+editor:Label=select Query on L_SCENARIO_MANAGER
+editor:handle=5dd59c893c5b04d3
+editor:sortkey=58982de20c653a8e
+output:@40fd2c7444283da6/=
+prop:DbInterface={{^EMEA_DEV1_DB_INTERFACE^}}
+encrypted:simple=nFZhmIpYZmvjMtRGF8lNF8JPgXLTznUZdCHZKKmdqEwCPHXbp8rf0q5nfic=
+prop:DbService={{^EMEA_DEV1_DB_SERVICE^}}
+prop:DbUser={{^EMEA_DEV1_DB_USER^}}
+prop:SqlQuery=<<EOX
+SELECT DISTINCT LRCR.COUNTRY_CODE, LSM.LOC_A_COUNTRY from L_SCENARIO_MANAGER LSM
+LEFT OUTER JOIN L_REF_COUNTRY_REGION LRCR ON UPPER(LRCR.COUNTRY_NAME) = UPPER(LSM.LOC_A_COUNTRY)
+Where LRCR.COUNTRY_CODE is not null
+EOX
+editor:XY=210,100
+end:select_Query_on_L_SCENARIO_MANAGER_3
+
+node:select_Query_on_L_SCENARIO_MANAGER_2
+bretype:core::DB Query
+editor:Label=select Query on L_SCENARIO_MANAGER
+editor:handle=5dd59c89508431d7
+editor:sortkey=58982de20c653a8e_2
+output:@40fd2c7444283da6/=
+inclock:/=UPDATE_COUNTRY_CODE_A
+prop:DbInterface={{^EMEA_DEV1_DB_INTERFACE^}}
+encrypted:simple=nFZhmIpYZmvjMtRGF8lNF8JPgXLTznUZdCHZKKmdqEwCPHXbp8rf0q5nfic=
+prop:DbService={{^EMEA_DEV1_DB_SERVICE^}}
+prop:DbUser={{^EMEA_DEV1_DB_USER^}}
+prop:SqlQuery=<<EOX
+SELECT DISTINCT LRCR.COUNTRY_CODE, LSM.LOC_Z_COUNTRY from L_SCENARIO_MANAGER LSM
+LEFT OUTER JOIN L_REF_COUNTRY_REGION LRCR ON UPPER(LRCR.COUNTRY_NAME) = UPPER(LSM.LOC_Z_COUNTRY)
+Where LRCR.COUNTRY_CODE is not null
+EOX
+editor:XY=210,260
+end:select_Query_on_L_SCENARIO_MANAGER_2
+
+node:select_Query_on_L_SCENARIO_MANAGER
+bretype:core::DB Query
+editor:Label=select Query on L_SCENARIO_MANAGER
+editor:handle=5dd59c8965a0142c
+editor:sortkey=58982de20c653a8e_3
+output:@40fd2c7444283da6/=
+inclock:/=UPDATE_COUNTRY_CODE_Z
+prop:DbInterface={{^EMEA_DEV1_DB_INTERFACE^}}
+encrypted:simple=nFZhmIpYZmvjMtRGF8lNF8JPgXLTznUZdCHZKKmdqEwCPHXbp8rf0q5nfic=
+prop:DbService={{^EMEA_DEV1_DB_SERVICE^}}
+prop:DbUser={{^EMEA_DEV1_DB_USER^}}
+prop:SqlQuery=<<EOX
+SELECT DISTINCT LRCR.COUNTRY_CODE_2CHAR, LSM.LOC_A_COUNTRY from L_SCENARIO_MANAGER LSM
+LEFT OUTER JOIN L_REF_COUNTRY_REGION LRCR ON UPPER(LRCR.COUNTRY_CODE_2CHAR) = UPPER(LSM.LOC_A_COUNTRY)
+Where LRCR.COUNTRY_CODE_2CHAR is not null
+EOX
+editor:XY=210,430
+end:select_Query_on_L_SCENARIO_MANAGER
+
+node:select_Query_on_L_SCENARIO_MANAGER_4
+bretype:core::DB Query
+editor:Label=select Query on L_SCENARIO_MANAGER
+editor:handle=5dd59c89773e5c95
+editor:sortkey=58982de20c653a8e_4
+output:@40fd2c7444283da6/=
+inclock:/=UPDATE_COUNTRY_CODE_A_2
+prop:DbInterface={{^EMEA_DEV1_DB_INTERFACE^}}
+encrypted:simple=nFZhmIpYZmvjMtRGF8lNF8JPgXLTznUZdCHZKKmdqEwCPHXbp8rf0q5nfic=
+prop:DbService={{^EMEA_DEV1_DB_SERVICE^}}
+prop:DbUser={{^EMEA_DEV1_DB_USER^}}
+prop:SqlQuery=<<EOX
+SELECT DISTINCT LRCR.COUNTRY_CODE_2CHAR, LSM.LOC_Z_COUNTRY from L_SCENARIO_MANAGER LSM
+LEFT OUTER JOIN L_REF_COUNTRY_REGION LRCR ON UPPER(LRCR.COUNTRY_CODE_2CHAR) = UPPER(LSM.LOC_Z_COUNTRY)
+Where LRCR.COUNTRY_CODE_2CHAR is not null
+EOX
+editor:XY=200,580
+end:select_Query_on_L_SCENARIO_MANAGER_4
+
+end:Update_COUNTRY_CODE_A
+
+node:CODS__CILPD
+bretype:core::DB Query
+editor:Label=CODS - CILPD
+editor:handle=5dd59c8930dd5749
+editor:sortkey=5ad0dc971c64651c_2
+output:@40fd2c7444283da6/=
+inclock:/=L_SCENARIO_MANAGER
+prop:DbInterface={{^CILPD_DB_INTERFACE^}}
+encrypted:simple=nFZhmIpYZmvjMtRGF8lNF8JPgXTXx2QCbyDNRqaYuUAFMnTMrvjwnP==
+prop:DbService={{^CILPD_DB_SERVICE^}}
+prop:DbUser={{^CILPD_DB_USER^}}
+prop:SqlQuery=<<EOX
+SELECT 
+  DISTINCT LTRIM(
+    RTRIM(
+      TO_CHAR(pp.source_Create_dt, 'Month')
+    )
+  ) || ' ' || TO_CHAR(pp.source_Create_dt, 'YYYY') MONTH_NAME, 
+  pp.quote_nbr QUOTE_NUMBER, 
+  'Scenario Manager' QUOTING_SYSTEM, 
+  pp.PRODUCT_INST_ID PRODUCT_PACKAGE, 
+  c.SERV_COMPNT_ID LINE_ITEM_ID, 
+  pp.PRODUCT_NAME PRODUCT, 
+  c.PRODUCT_NAME CHILD_PRODUCT, 
+  PP.BANDWDTH_CD BANDWIDTH, 
+  CASE WHEN Offnet.VENDOR_SUB_BANDWDTH_CD <> ' ' THEN Offnet.VENDOR_SUB_BANDWDTH_CD WHEN pp.SOURCE_SUB_BANDWDTH_CD IS NOT NULL THEN pp.SOURCE_SUB_BANDWDTH_CD ELSE pp.SUB_BANDWDTH_CD END SUB_BANDWIDTH, 
+  pp.source_Create_dt QUOTE_DATE, 
+  pl.PRODUCT_LOC_ID PL_ID, 
+  pl.LINE1_ADDR ADDR_LINE1, 
+  pl.CITY_NAME CITY, 
+  pl.POSTAL_CD POST_CODE, 
+  pl.COUNTRY_NAME COUNTRY,
+  CASE 
+  WHEN pl.REGION_CD = 'NA' THEN 'ASIA' 
+  WHEN pl.REGION_CD IS NULL THEN 'EUROPE' 
+  WHEN pl.REGION_CD = 'LATAM' THEN 'SOUTH AMERICA' 
+  WHEN pl.REGION_CD = 'EMEA' THEN 'EUROPE' 
+  WHEN pl.REGION_CD = 'APAC' THEN 'ASIA' 
+  ELSE pl.REGION_CD END REGION, 
+  CASE WHEN Offnet.OFFNET_SOLUTION_SOURCE_NAME = 'ROC' THEN 'Manual' ELSE 'Standard' END QUOTE_TYPE, 
+  Offnet.VENDOR_NAME VENDOR, 
+  pp.quote_term_months_qty / 12 PRICETERMID, 
+  offnet.offnet_solution_source_name OFFNET_SOLUTION_SOURCE_NAME, 
+  Offnet.AMS_SOLUTION_ID SOLUTION_ID, 
+  offnet.VENDOR_BUDGETARY_IND ISBUDGETARY, 
+  CASE WHEN c.OFFNET_PROVIDER_DIVERSITY_IND = 'Y' THEN 'Y' ELSE 'N' END ISDIVERSITY, 
+  pp.src_total_mrc_amt MRC, 
+  pp.src_total_nrc_amt NRC, 
+  pp.CURRENCY_CD CURRENCYCODE, 
+  pp.USD_TOTAL_MRC_AMT USD_TOTAL_MRC_AMT, 
+  pp.USD_TOTAL_NRC_AMT USD_TOTAL_NRC_AMT 
+FROM 
+  cods.QUOTE_PRODUCT PP 
+  INNER JOIN cods.QUOTE S ON s.QUOTE_ODS_ID = pp.QUOTE_ODS_ID 
+  INNER JOIN cods.OPPORTUNITY O ON O.OPPTY_ODS_ID = S.OPPTY_ODS_ID 
+  INNER JOIN cods.Customer Cu ON Cu.CUST_ODS_ID = O.CUST_ODS_ID 
+  INNER JOIN cods.QUOTE_PRODUCT_COMPNT C ON PP.PRODUCT_INST_ID = C.PRODUCT_INST_ID 
+  LEFT JOIN cods.QUOTE_PRODUCT_ELEMENT Offnet ON Offnet.SERV_COMPNT_ID = C.SERV_COMPNT_ID 
+  AND offnet.QUOTE_PRODUCT_COMPNT_ODS_ID = C.QUOTE_PRODUCT_COMPNT_ODS_ID 
+  LEFT JOIN cods.QUOTE_PRODUCT_ENDPNT pe ON pe.QUOTE_PRODUCT_ODS_ID = pp.QUOTE_PRODUCT_ODS_ID 
+  AND ENDPNT_TYP = 'Access A' 
+  LEFT JOIN cods.PRODUCT_LOCATION pl ON pe.product_loc_ods_id = pl.product_loc_ods_id 
+WHERE 
+1 = 1
+and CASE WHEN PP.BANDWDTH_CD IN
+('1.5MBPS','10','10.5MBPS','100','1000','1000MBPS','100BASE-T','100MBPS','10MBPS','125MBPS' ,'12MBPS' ,'15'
+,'150','1500','150MBPS','15MBPS' ,'175MBPS' ,'1GIG' ,'1GIG-E','GIG-E' ,'1MBPS' ,'200','2000','2000MBPS' ,'200MBPS'
+,'20MBPS' ,'21MBPS' ,'225MBPS' ,'2500','250MBPS' ,'25MBPS' ,'27MBPS' ,'2MBPS' ,'3','30','300','3000MBPS' ,'300MBPS'
+,'30MBPS' ,'3500','350MBPS' ,'35MBPS' ,'3MBPS' ,'4.5MBPS' ,'400','4000MBPS' ,'400MBPS' ,'40MBPS' ,'450MBPS' ,'45MBPS'
+,'4MBPS' ,'50','500','5000','500MBPS' ,'50MBPS' ,'550MBPS' ,'55MBPS' ,'6','600MBPS' ,'60MBPS','650MBPS' ,'65MBPS' ,'6MBPS'
+,'7.5MBPS' ,'700MBPS' ,'70MBPS' ,'750MBPS' ,'75MBPS' ,'800MBPS' ,'80MBPS' ,'850MBPS' ,'85MBPS' ,'8MBPS' ,'900MBPS' ,'90MBPS'
+,'950MBPS' ,'95MBPS' ,'9MBPS' ,'ETHERNET' ,'ETHERNET 100MBPS' ,'ETHERNET 10MBPS' ,'ETHERNET 1GBPS' ,'FIBER')
+and pp.PRODUCT_NAME NOT IN ('Wavelength','Adaptive Network Security','HSIP Cross Connect','HSIP Wavelength') 
+and C.PRODUCT_NAME <> '3rd Party Cross Connect'   THEN 'Yes' ELSE 'No' END = 'Yes'
+and CASE WHEN Offnet.OFFNET_SOLUTION_SOURCE_NAME IN ('AMS','ROC','QuoteStore') THEN 'Yes' ELSE 'No' end = 'Yes'
+and S.ACTIVE_IND = 'Y'
+and pl.country_name not in ('UNITED STATES', 'CANADA')
+and
+  LTRIM(
+    RTRIM(
+      TO_CHAR(pp.source_Create_dt, 'Month')
+    )
+  ) || ' ' || TO_CHAR(pp.source_Create_dt, 'YYYY') = TO_CHAR(
+    ADD_MONTHS(sysdate,-1), 
+    'fmMonth'
+  ) || ' ' || TO_CHAR(LAST_DAY(ADD_MONTHS(SYSDATE,-1)), 'YYYY')
+  and pp.dw_source_system_CD = 'SCENARIO_MANAGER'
+ORDER BY 
+  pp.quote_nbr, 
+  pp.PRODUCT_INST_ID, 
+  c.SERV_COMPNT_ID
+EOX
+editor:XY=300,160
+end:CODS__CILPD
+
+node:DB_Query
+bretype:core::DB Query
+editor:handle=5dd59c8929a7135c
+editor:sortkey=5b6df7280d7c57a3
+output:@40fd2c7444283da6/=
+prop:DbInterface=OCI
+encrypted:simple=nFZhmIpYZmvjMtRGF8lNF8lcvkT7uT4=
+prop:DbService=ERDBPC
+prop:DbUser={{^GLM_DB_USER^}}
+prop:Enabled=false
+prop:SqlQuery=<<EOX
+select
+distinct TO_CHAR(se.created_date, 'MonthYYYY')
+,SE.ENTITY_ID Quote_nbr
+,psp.TRANSACTION_ID, psp.PRODUCT_PACKAGE_ID, pi.PRODUCT_INSTANCE_ID
+     , pa.ATTRIBUTE_VALUE Diverse_Building_Entrance_desc
+     , pa_dber.ATTRIBUTE_VALUE Diverse_Bld_Entrance_Required
+     , pa_edr.ATTRIBUTE_VALUE Equipment_Diversity_Required
+     , pa_bw.ATTRIBUTE_VALUE
+     , case when pa_dlr.ATTRIBUTE_VALUE = 'Offnet Diversity' then 'Y' else 'N' end Offnet_Diversity
+     , pa_roc.ATTRIBUTE_VALUE roc_instructions
+     , pa_rd.ATTRIBUTE_VALUE route_diversity
+     , pa_rdn.ATTRIBUTE_VALUE route_diversity_note
+     , pa_vedn.ATTRIBUTE_VALUE Vendor_equip_diversity_note
+     , pa_or.ATTRIBUTE_VALUE ROC_ID
+     , pa_cc.ATTRIBUTE_VALUE cross_connect
+     , case when pdp.DESCRIPTION  = 'Budgetary Pricing = Yes' then 'Y' else 'N' end  Budgetary
+     , ltrim(REGEXP_SUBSTR(pdp_bw.DESCRIPTION,'=(.*)'), '=') Bandwidth
+     , ltrim(REGEXP_SUBSTR(pdp_qbw.DESCRIPTION,'=(.*)'), '=') Quoted_Sub_Bandwidth
+     , ltrim(REGEXP_SUBSTR(pdp_p.DESCRIPTION,'=(.*)'), '=') Provider
+     , ltrim(REGEXP_SUBSTR(pdp_at.DESCRIPTION,'=(.*)'), '=') Access_type
+     , pdp_rc.DESCRIPTION ROC_Comments
+     , pdp_c.DESCRIPTION Comments
+  FROM SWIFT_STAGE.SM_ENTITIES SE
+       INNER JOIN SWIFT_STAGE.BUSINESS_ORDER  BO
+          ON     SE.SM_ENTITY_ID = BO.SM_ENTITY_ID
+             AND SE.ENTITY_TYPE = 'Scenario'
+       INNER JOIN
+       SWIFT_STAGE.PRODUCT_TRANSACTION  PT
+          ON     BO.BUSINESS_ORDER_ID = PT.BUSINESS_ORDER_ID
+             ---AND PT.STATUS = 'Pending'
+       INNER JOIN
+       SWIFT_STAGE.PRODUCT_SERVICE_PACKAGE PSP
+          ON     PT.TRANSACTION_ID = PSP.TRANSACTION_ID
+             ---AND PSP.STATUS = 'Pending'
+             join SWIFT_STAGE.PRODUCT_INSTANCE pi
+        on pi.PRODUCT_PACKAGE_ID = psp.PRODUCT_PACKAGE_ID
+      left join SWIFT_STAGE.PRODUCT_ATTRIBUTES pa
+        on pa.PRODUCT_INSTANCE_ID = pi.PRODUCT_INSTANCE_ID
+           and pa.TRANSACTION_ID = psp.TRANSACTION_ID
+           and pa.ATTRIBUTE_NAME = 'Diverse Building Entrance Description'
+      left join SWIFT_STAGE.PRODUCT_ATTRIBUTES pa_dber
+        on pa_dber.PRODUCT_INSTANCE_ID = pi.PRODUCT_INSTANCE_ID
+           and pa_dber.TRANSACTION_ID = psp.TRANSACTION_ID
+           and pa_dber.ATTRIBUTE_NAME = 'Diverse Building Entrance Required'
+      left join SWIFT_STAGE.PRODUCT_ATTRIBUTES pa_edr
+        on pa_edr.PRODUCT_INSTANCE_ID = pi.PRODUCT_INSTANCE_ID
+           and pa_edr.TRANSACTION_ID = psp.TRANSACTION_ID
+           and pa_edr.ATTRIBUTE_NAME = 'Equipment Diversity Required'
+      left join SWIFT_STAGE.PRODUCT_ATTRIBUTES pa_roc
+        on pa_roc.PRODUCT_INSTANCE_ID = pi.PRODUCT_INSTANCE_ID
+           and pa_roc.TRANSACTION_ID = psp.TRANSACTION_ID
+           and pa_roc.ATTRIBUTE_NAME = 'ROC Instructions'
+      left join SWIFT_STAGE.PRODUCT_ATTRIBUTES pa_dlr
+        on pa_dlr.PRODUCT_INSTANCE_ID = pi.PRODUCT_INSTANCE_ID
+           and pa_dlr.TRANSACTION_ID = psp.TRANSACTION_ID
+           and pa_dlr.ATTRIBUTE_NAME = 'DLR'
+      left join SWIFT_STAGE.PRODUCT_ATTRIBUTES pa_bw
+        on pa_bw.PRODUCT_INSTANCE_ID = pi.PRODUCT_INSTANCE_ID
+           and pa_bw.TRANSACTION_ID = psp.TRANSACTION_ID
+           and pa_bw.ATTRIBUTE_NAME = 'Level 3 Bandwidth'
+      left join SWIFT_STAGE.PRODUCT_ATTRIBUTES pa_rd
+        on pa_rd.PRODUCT_INSTANCE_ID = pi.PRODUCT_INSTANCE_ID
+           and pa_rd.TRANSACTION_ID = psp.TRANSACTION_ID
+           and pa_rd.ATTRIBUTE_NAME = 'Route Diversity'
+      left join SWIFT_STAGE.PRODUCT_ATTRIBUTES pa_rdn
+        on pa_rdn.PRODUCT_INSTANCE_ID = pi.PRODUCT_INSTANCE_ID
+           and pa_rdn.TRANSACTION_ID = psp.TRANSACTION_ID
+           and pa_rdn.ATTRIBUTE_NAME = 'Route Diversity Note'
+      left join SWIFT_STAGE.PRODUCT_ATTRIBUTES pa_vedn
+        on pa_vedn.PRODUCT_INSTANCE_ID = pi.PRODUCT_INSTANCE_ID
+           and pa_vedn.TRANSACTION_ID = psp.TRANSACTION_ID
+           and pa_vedn.ATTRIBUTE_NAME = 'Vendor Equipment Diversity Note'
+      left join SWIFT_STAGE.PRODUCT_ATTRIBUTES pa_or
+        on pa_or.PRODUCT_INSTANCE_ID = pi.PRODUCT_INSTANCE_ID
+           and pa_or.TRANSACTION_ID = psp.TRANSACTION_ID
+           and pa_or.ATTRIBUTE_NAME = 'Auto ROC ID'
+      left join SWIFT_STAGE.PRODUCT_ATTRIBUTES pa_cc
+        on pa_cc.PRODUCT_INSTANCE_ID = pi.PRODUCT_INSTANCE_ID
+           and pa_cc.TRANSACTION_ID = psp.TRANSACTION_ID
+           and instr(pa_cc.ATTRIBUTE_NAME,'Cross Connect') >0
+      left join SWIFT_STAGE.PRODUCT_PRICE_DETAILS pdp
+        on pdp.PRODUCT_INSTANCE_ID = pi.PRODUCT_INSTANCE_ID
+           and pdp.TRANSACTION_ID = psp.TRANSACTION_ID
+           and instr(pdp.DESCRIPTION,'Budgetary Pricing') > 0
+      left join SWIFT_STAGE.PRODUCT_PRICE_DETAILS pdp_p
+        on pdp_p.PRODUCT_INSTANCE_ID = pi.PRODUCT_INSTANCE_ID
+           and pdp_p.TRANSACTION_ID = psp.TRANSACTION_ID
+           and instr(pdp_p.DESCRIPTION,'Provider') > 0
+      left join SWIFT_STAGE.PRODUCT_PRICE_DETAILS pdp_qbw
+        on pdp_qbw.PRODUCT_INSTANCE_ID = pi.PRODUCT_INSTANCE_ID
+           and pdp_qbw.TRANSACTION_ID = psp.TRANSACTION_ID
+           and instr(pdp_qbw.DESCRIPTION,'Quoted Sub Bandwidth') > 0
+      left join SWIFT_STAGE.PRODUCT_PRICE_DETAILS pdp_at
+        on pdp_at.PRODUCT_INSTANCE_ID = pi.PRODUCT_INSTANCE_ID
+           and pdp_at.TRANSACTION_ID = psp.TRANSACTION_ID
+           and instr(pdp_at.DESCRIPTION,'Access Type') > 0
+      left join SWIFT_STAGE.PRODUCT_PRICE_DETAILS pdp_rc
+        on pdp_rc.PRODUCT_INSTANCE_ID = pi.PRODUCT_INSTANCE_ID
+           and pdp_rc.TRANSACTION_ID = psp.TRANSACTION_ID
+           and instr(pdp_rc.DESCRIPTION,'ROC Comments') > 0
+      left join SWIFT_STAGE.PRODUCT_PRICE_DETAILS pdp_c
+        on pdp_c.PRODUCT_INSTANCE_ID = pi.PRODUCT_INSTANCE_ID
+           and pdp_c.TRANSACTION_ID = psp.TRANSACTION_ID
+           and pdp_c.DESCRIPTION like 'Comments%'
+           and instr(pdp_rc.DESCRIPTION,'ROC Comments') > 0
+      left join SWIFT_STAGE.PRODUCT_PRICE_DETAILS pdp_bw
+        on pdp_bw.PRODUCT_INSTANCE_ID = pi.PRODUCT_INSTANCE_ID
+           and pdp_bw.TRANSACTION_ID = psp.TRANSACTION_ID
+           and pdp_bw.DESCRIPTION like 'Bandwidth%'
+where 1=1
+and se.created_date >= ADD_MONTHS(sysdate,-1)
+order by psp.TRANSACTION_ID,pi.PRODUCT_INSTANCE_ID
+
+
+EOX
+editor:XY=720,810
+end:DB_Query
+
+end:SCENARIO_MANAGER
+
+node:IFO
+bretype:core::Composite
+editor:Label=IFO
+editor:handle=5ade0ba27b3269ed
+editor:sortkey=5ade0ba27b3269ed
+inclockxy:Inclock=110,50
+outclockxy:Outclock=230,50
+ineventxy:InEvent=20,200
+outeventxy:OutEvent=400,200
+editor:XY=180,280
+node:set_up_file_name_path_report_names
+bretype:core::Filter
+editor:Label=set up file name, path, report names
+editor:handle=5afcd605763470ee
+editor:sortkey=4fda52d137320259
+input:@40fd2c74167f1ca2/=JDBCJVT_logon_IFO.439f475045133ba6
+output:@40fd2c7420761db6/=
+prop:Script=<<EOX
+##  do all substitusions and building of values in a filter node
+#fields available  email, file, path, message, subject, filesize
+#if file,path or message are missing they will be left blank in the email
+#email is required  and can be comma or semi separated
+#subject should be set.  if left blank it will be replaced with "No Subject" for spam filters
+#the / between path and file will be inserted.
+#using a param for message allows for replacemnt of values as params but this is limited
+
+#path  = "/lavastorm/migr"
+#filename = path+"/"+files
+#file = files.replace(path+"/","")
+#file = "out1.xls"
+#filesize = filename.stat()  #gets the file size of file
+n_hash=execCount
+#e = "r.venkatesh@level3.com;sarada.bhattacherjee@level3.com"#;sarada.bhattacherjee@level3.com;aparna.lakkaraju@level3.com;badrinath.choudavarapu@level3.com;gayatri.kache@level3.com"
+e = "{{^DL_MIGRATION^}}"
+
+emit e as email
+, "IFO query has completed" as message  ##create a graph level param to emit as here if you want
+   , "Query execution"+"@"+"{{^IFO_DB_URL^}}" as subject
+   where n_hash <2
+   
+EOX
+editor:XY=510,370
+end:set_up_file_name_path_report_names
+
+node:Success_Dynamic_Email_wfile
+bretype:utils::Dynamic Email w/file
+editor:Label=Success -Dynamic Email w/file
+editor:handle=5afcd60525ad7299
+editor:sortkey=5315f24910a962dc_2
+input:@4fdf8a4f3e7b7b11/=set_up_file_name_path_report_names.40fd2c7420761db6
+output:@4fdf8a53751436e8/=
+prop:fromemail=NoReply@level3.com
+prop:saveunzip=false
+prop:savezip=false
+prop:zipfilesize=300000
+editor:XY=680,370
+end:Success_Dynamic_Email_wfile
+
+node:L_IFO
+bretype:core::DB Truncate
+editor:Label=L_IFO
+editor:handle=5ada5fb716bf3357
+editor:sortkey=586b77c00cf574f4_7
+prop:CleanResults=ALL
+prop:DbInterface={{^EMEA_DEV1_DB_INTERFACE^}}
+encrypted:simple=nFZhmIpYZmvjMtRGF8lNF8JPgXLTznUZdCHZKKmdqEwCPHXbp8rf0q5nfic=
+prop:DbService={{^EMEA_DEV1_DB_SERVICE^}}
+prop:DbUser={{^EMEA_DEV1_DB_USER^}}
+prop:Script=<<EOX
+resultValue = "{{^CleanResults^}}".trim().toUpper().switch(
+	"NONE", false,
+	"ALL", sqlNonSelect("truncate table {{^Table^}}"),
+	"TODAY", sqlNonSelect("delete from {{^Table^}} where to_char({{^DateColumn=DATE_COLUMN_NOT_SET^}}, 'YYYYMMDD') = to_char(SYSDATE,'YYYYMMDD') "),
+	sqlNonSelect("delete from {{^Table^}} where {{^DateColumn=DATE_COLUMN_NOT_SET^}} = TO_DATE('{{^CleanResults^}}','YYYY-MM-DD') ")
+)
+	
+EOX
+prop:Table=L_IFO
+editor:XY=120,190
+end:L_IFO
+
+node:Update_LOC_A_COUNTRY_2
+bretype:core::Composite
+editor:Label=Update LOC_A_COUNTRY
+editor:handle=5af5f4203d017cf8
+editor:sortkey=58a6e8f727d41704
+inclock:/=Insert_into_L_IFO
+inclockxy:Inclock=50,40
+outclockxy:Outclock=150,40
+ineventxy:InEvent=50,373270
+outeventxy:OutEvent=700,373320
+editor:XY=910,170
+node:UPDATE_LOC_A_COUNTRY
+bretype:core::DB Execute
+editor:Label=UPDATE LOC_A_COUNTRY
+editor:handle=5af5f420258c7714
+editor:sortkey=4c72e1a271016c13_6
+input:4c72e1a27a7806e9/=Filter.40fd2c7420761db6
+prop:CommitFrequency=1000
+prop:DbInterface={{^EMEA_DEV1_DB_INTERFACE^}}
+encrypted:simple=nFZhmIpYZmvjMtRGF8lNF8JPgXLTznUZdCHZKKmdqEwCPHXbp8rf0q5nfic=
+prop:DbService={{^EMEA_DEV1_DB_SERVICE^}}
+prop:DbUser={{^EMEA_DEV1_DB_USER^}}
+prop:Query=<<EOX
+UPDATE   L_IFO
+SET LOC_A_COUNTRY=:1
+where COUNTRY_CODE_A = :2 
+
+  
+EOX
+prop:Script=<<EOX
+sqlNonSelect
+  (
+  "{{^Query^}}",
+  COUNTRY_NAME,
+  COUNTRY_CODE
+  
+   )
+EOX
+editor:XY=700,100
+editor:propdef=Query|sql|1||None
+end:UPDATE_LOC_A_COUNTRY
+
+node:Filter
+bretype:core::Filter
+editor:handle=5af5f42052a379b7
+editor:sortkey=5890814318c32f86
+input:@40fd2c74167f1ca2/=select_Query_on_L_REF_COUNTRY_REGION.40fd2c7444283da6
+output:@40fd2c7420761db6/=
+prop:Script=<<EOX
+     
+    
+emit COUNTRY_NAME, COUNTRY_CODE
+
+
+EOX
+editor:XY=410,100
+end:Filter
+
+node:select_Query_on_L_REF_COUNTRY_REGION
+bretype:core::DB Query
+editor:Label=select Query on L_REF_COUNTRY_REGION
+editor:handle=5af5f42018a47b0d
+editor:sortkey=58982de20c653a8e
+output:@40fd2c7444283da6/=
+prop:DbInterface={{^EMEA_DEV1_DB_INTERFACE^}}
+encrypted:simple=nFZhmIpYZmvjMtRGF8lNF8JPgXLTznUZdCHZKKmdqEwCPHXbp8rf0q5nfic=
+prop:DbService={{^EMEA_DEV1_DB_SERVICE^}}
+prop:DbUser={{^EMEA_DEV1_DB_USER^}}
+prop:SqlQuery=<<EOX
+SELECT DISTINCT COUNTRY_NAME, COUNTRY_CODE from L_REF_COUNTRY_REGION LRCR 
+
+EOX
+editor:XY=210,100
+end:select_Query_on_L_REF_COUNTRY_REGION
+
+end:Update_LOC_A_COUNTRY_2
+
+node:JDBCJVT_logon_IFO
+bretype:core::JDBC Query
+editor:Label=JDBC-JVT logon- IFO
+editor:handle=5ada5ad15acd5606
+editor:sortkey=5acfbd000662548d_2
+output:@439f475045133ba6/=
+inclock:/=L_IFO
+prop:DbDriver={{^IFO_DRIVER^}}
+encrypted:simple=nFZhmIpYZmvjMtRGF8lNF/Nds1v36lp2CVa5E/==
+prop:DbUrl={{^IFO_DB_URL^}}
+prop:DbUser={{^IFO_DB_USER^}}
+prop:DefaultToUnicode=true
+prop:SqlQuery=<<EOX
+	SELECT DISTINCT 
+	  DATENAME(MM, ELI.CREATEDATE) + ' ' + LTRIM(STR(YEAR(ELI.CREATEDATE))) MONTH_NAME
+	, OQ.TRACKINGNUMBER QUOTE_NUMBER
+	, LTRIM(STR(YEAR(ELI.CREATEDATE))) + RIGHT('00' + LTRIM(STR(MONTH(ELI.CREATEDATE))), 2) MONTHID
+	, ELI.ORDERQUOTEID "QUOTE #"
+	, ELI.ENTITYLINEITEMID
+	, ELI.TRACKINGNUMBER LINE_ITEM_ID
+	, ELI.CatalogServiceElementId AS CATALOG_SERVICE_ELEMENT_ID
+	, 'IFO' QUOTING_SYSTEM
+	, LOC.GLMLOCATIONID LOC_A_GLM_PL_ID
+	, ISNULL(LOC.PREMISE,'') + ' ' + ISNULL(LOC.STREET,'') AS LOC_A_ADDR_LINE1
+	, LOC.CITY LOC_A_CITY
+	, LOC.POSTALCODE LOC_A_POST_CODE
+	, LOC.COUNTRYCODE COUNTRY_CODE_A
+	, CONVERT(nvarchar(100), CASE 
+              WHEN c.AVRMQueue LIKE '%Asia%'
+                     THEN 'ASIA'
+              WHEN c.AVRMQueue LIKE '%_NA%'
+                     THEN 'NORTH AMERICA'
+              WHEN c.AVRMQueue LIKE '%_SA%'
+                     THEN 'SOUTH AMERICA'
+              WHEN c.AVRMQueue LIKE '%EUR%'
+                     THEN 'EUROPE'
+              ELSE NULL
+              END) AS LOC_A_REGION
+     ,elip.isbudgetary         
+	,BW.DESCRIPTION AS BANDWIDTH
+	,sub.value SUB_BANDWIDTH
+	, ELIP.ENTITYTYPEID
+	, ELIP.VENDOR
+	, ELIP.PRICETERMID
+	, ELIP.MRC MRC
+	, ELIP.PRICEORIGINID
+	, ELIP.ISICB 
+	, ELIP.NRC NRC
+	, ELIP.CURRENCYCODE CURRENCYCODE
+	, ELIP.ENTITYID
+	, ELI.DATESERVICEINQUIRYSUBMITTED
+    , CONVERT(date, ELI.CREATEDATE, 23) QUOTE_DATE
+    , CASE WHEN (ti.entitytypeID ='PRICESTD' and ti.IsICB = 0)THEN 'Standard'
+              WHEN ti.entitytypeID = 'AMSREQ'  THEN 'Standard' ELSE 'Manual' 
+                END QUOTE_TYPE
+	, CASE WHEN ELI.DATESERVICEINQUIRYSUBMITTED IS NULL THEN 1 ELSE 0 END 'SINOTFOUND'
+	, DCP.PRODUCT PRODUCT
+	, OQ.CUSTOMERNAME
+	, OQ.CHANNELTYPEID
+	, CASE WHEN SRR.REPORTREGION IS NULL THEN 'UNKNOWN' ELSE SRR.REPORTREGION END SALESREGION
+	, SRR.COUNTRYCODE SALES_REP_COUNTRY
+	, ELI.CATALOGSERVICEELEMENTID
+	, CSE.REPORT1
+	, case when CSE.DESCRIPTION =  'EtherExtend Flex (NOE NNI)' then 'NNI' else 'Point to Point' end DESCRIPTION
+	, ELIP.ENTITYLINEITEMPRICEID
+	, ELIP.DIVERSITYCOMPLIANCEINDICATOR
+	, ELIP.DIVERSITYOPTIONNUMBER
+	, ELIP.CONTROLLINGNETWORKINDICATOR
+	, LTRIM(RTRIM(SUBSTRING(SI.Comments, 1, 3500))) AS COMMENTS
+	,LTRIM(RTRIM(SUBSTRING(SIS.Comment,1,3500)))as SI_COMMENTS
+	,LTRIM(RTRIM(SUBSTRING(SIS.DiversityComment,1,3500)))as SI_DIVERSITY_COMMENTS
+	, ELIP.NRC LIST_PRICE
+	, srr.ReportRegion REPORT_REGION
+	, case when LEN(ti.EntityTypeId) > 0 then 'Y' else 'N' END AS 'AMSREQ_FLAG'
+	,ELIP.SOLUTIONID
+	,case when ELI.queueowner is NULL then 'N' else 'Y' end "COG_Team_Selected"
+	FROM DBO.ENTITYLINEITEM AS ELI
+	INNER JOIN DBO.ENTITYLINEITEMPRICE AS ELIP ON ELI.ENTITYLINEITEMID = ELIP.ENTITYLINEITEMID
+	INNER JOIN DBO.PRICECUBETYPE AS PC ON ELIP.PRICECUBETYPEID = PC.PRICECUBETYPEID
+	INNER JOIN DBO.LOCATION AS LOC ON LOC.LOCATIONID = ELI.LOCATIONID
+	INNER JOIN DBO.COUNTRY AS C ON LOC.COUNTRYCODE = C.COUNTRYCODE
+	INNER JOIN DBO.CATALOGBANDWIDTH AS BW ON ELI.CATALOGBANDWIDTHID = BW.CATALOGBANDWIDTHID
+	INNER JOIN DBO.V_DW_DIMCATALOGPRODUCT AS DCP ON ELI.CATALOGPRODUCTID = DCP.CATALOGPRODUCTID
+	INNER JOIN DBO.ORDERQUOTE AS OQ ON OQ.ORDERQUOTEID = ELI.ORDERQUOTEID
+	LEFT JOIN DBO.ServiceInquirySummary SIS on ELI.entityproductitemid = SIS.entityproductitemid
+	LEFT JOIN DBO.V_DW_DIMUSER AS SR ON ELI.CREATEID = SR.USERID AND SR.ISACTIVE = 1
+	LEFT JOIN DBO.COUNTRY AS SRR ON SR.COUNTRY = SRR.COUNTRYCODE
+	INNER JOIN DBO.CATALOGSERVICEELEMENT AS CSE ON ELI.CATALOGSERVICEELEMENTID = CSE.CATALOGSERVICEELEMENTID
+	LEFT JOIN DBO.SERVICEINQUIRYAVRM AS SI ON SI.ENTITYLINEITEMID = ELI.ENTITYLINEITEMID
+	    LEFT OUTER JOIN(select distinct e.EntityTypeId, e.ENTITYLINEITEMID, e.IsIcb from dbo.EntityLineItemPrice e
+                where (e.EntityTypeId='AMSREQ' or (e.entitytypeID ='PRICESTD' and e.IsICB = 0 )) ) ti on ti.EntityLineItemId = ELI.EntityLineItemId
+                
+                
+    LEFT OUTER JOIN ( SELECT DISTINCT
+                         eli.EntityLineItemId,
+                          eli.entityproductitemid ,
+                          elip.VALUE 
+                    FROM dbo.EntityLineItem eli
+                         JOIN dbo.EntityLineItemProperty elip
+                            ON elip.EntityLineItemId = eli.EntityLineItemId
+                                                
+                      JOIN dbo.CatalogServiceElementProperty csep
+                             ON csep.CatalogServiceElementPropertyId =
+                                  elip.CatalogServiceElementPropertyId
+                         JOIN dbo.CatalogProperty cp
+                           ON     cp.CatalogPropertyId =
+                                      csep.CatalogPropertyId
+                              AND cp.CatalogPropertyCode = 'subBandwidth')sub on sub.entitylineitemid = eli.entitylineitemid
+                                 
+                                 
+	WHERE 1=1
+	AND ELI.CatalogServiceElementId IN ('344', '505', '506')
+    AND LTRIM(STR(YEAR(ELI.CREATEDATE)))+RIGHT('00'+LTRIM(STR(MONTH(ELI.CREATEDATE))),2) = LTRIM(STR(YEAR(DATEADD(month,-1,GETDATE()))))+RIGHT('00'+LTRIM(STR(MONTH(DATEADD(month,-1,GETDATE())))),2)
+    /*AND BW.DESCRIPTION IN ('FAST ETHERNET (100 MB)', 'GIG-ETHERNET (1000 MB)','ETHERNET (10 MB)')*/
+    --AND ELI.CREATEDATE > DATEADD(month, -1, GETDATE())
+    --  	ORDER BY LOC.COUNTRYCODE, CITY
+EOX
+editor:XY=290,190
+editor:Notes=Original: 
+editor:Notes=jdbc:jtds:sqlserver://localhost;databaseName=yourDBName;instance=yourInstance;domain=yourDomainName;useNTLMv2=true
+end:JDBCJVT_logon_IFO
+
+node:Hash_Split
+bretype:core::Hash Split
+editor:handle=5af5f010518d7dbd
+editor:sortkey=5af352cc678e6c74
+input:@42d5a99836af7bc2/=JDBCJVT_logon_IFO.439f475045133ba6
+output:@42d5aa381aa13793/=
+output:@42d5a99879a10daa/=
+output:5af352db17007b14/out3=
+output:5af352de355f5ddb/out4=
+output:5af352e07d7c35c7/out5=
+output:5af352e1600c5dbf/out6=
+output:5af352e84d4f6a10/out7=
+prop:SplitFields=QUOTE_NUMBER
+editor:XY=470,190
+end:Hash_Split
+
+node:Insert_into_L_IFO
+bretype:core::Composite
+editor:Label=Insert into L_IFO
+editor:handle=5af5f49f24435027
+editor:sortkey=5af5f49f24435027
+input:5af5f4cf446337a1/in1=Hash_Split.42d5aa381aa13793
+inputxy:0=100,470
+inputrotation:0=0
+input:5af5f4d0070412b9/in2=Hash_Split.42d5a99879a10daa
+inputxy:1=100,410
+inputrotation:1=0
+input:5af5f4d262713970/in3=Hash_Split.5af352db17007b14
+inputxy:2=100,350
+inputrotation:2=0
+input:5af5f4d345ec0042/in4=Hash_Split.5af352de355f5ddb
+inputxy:3=100,290
+inputrotation:3=0
+input:5af5f4d435501fa2/in5=Hash_Split.5af352e07d7c35c7
+inputxy:4=100,230
+inputrotation:4=0
+input:5af5f4d5632c7440/in6=Hash_Split.5af352e1600c5dbf
+inputxy:5=100,170
+inputrotation:5=0
+input:5af5f4d6445b46b4/in7=Hash_Split.5af352e84d4f6a10
+inputxy:6=100,110
+inputrotation:6=0
+inclockxy:Inclock=180,50
+outclockxy:Outclock=300,50
+ineventxy:InEvent=20,200
+outeventxy:OutEvent=400,200
+editor:XY=720,190
+node:INSERT_INTO_L_IFO_7_2
+bretype:core::DB Execute
+editor:Label=INSERT INTO L_IFO 7
+editor:handle=5af5f42039c101aa
+editor:sortkey=589034931f3c79f3
+input:589034fa78ca3f43/out7=^.5af5f4d6445b46b4
+prop:CommitFrequency=10000
+prop:DbInterface={{^EMEA_DEV1_DB_INTERFACE^}}
+encrypted:simple=nFZhmIpYZmvjMtRGF8lNF90Au1X/rz4=
+prop:DbService={{^EMEA_DEV1_DB_SERVICE^}}
+prop:DbUser={{^EMEA_DEV1_DB_USER^}}
+prop:Query=<<EOX
+insert into  L_IFO
+(
+MONTH_NAME,
+QUOTE_NUMBER,
+QUOTING_SYSTEM,
+PROD_INST,
+LINE_ITEM_ID,
+PRODUCT,
+BANDWIDTH,
+SUB_BANDWIDTH,
+QUOTE_DATE,
+LOC_A_GLM_PL_ID,
+LOC_A_ADDR_LINE1,
+LOC_A_CITY,
+LOC_A_POST_CODE,
+COUNTRY_CODE_A,
+LOC_A_REGION,
+QUOTE_TYPE,
+ENTITYLINEITEMPRICEID,
+DIVERSITYCOMPLIANCEINDICATOR,
+DIVERSITYOPTIONNUMBER,
+ENTITYTYPEID,
+VENDOR,
+PRICETERMID,
+PRICEORIGINID,
+ISICB,
+CONTROLLINGNETWORKINDICATOR,
+COMMENTS,
+LIST_PRICE,
+REPORT_REGION,
+SOLUTION_ID,
+DESCRIPTION,
+ISBUDGETARY,
+SI_COMMENTS,
+SI_DIVERSITY_COMMENTS,
+COG_Team_Selected,
+MRC,
+NRC,
+CURRENCYCODE,
+CREATE_DATETIME
+)
+values(:1,:2,:3,:4,:5,:6,:7,:8,to_date(:9,'YYYY-MM-DD'),:10,:11,:12,:13,:14,:15,:16,:17,:18,:19,:20,:21,:22,:23,:24,:25,:26,:27,:28,:29,:30,:31,:32,:33, :34,:35, :36, :37, SYSDATE)
+EOX
+prop:Script=<<EOX
+sqlNonSelect
+(
+  "{{^Query^}}",
+MONTH_NAME,
+QUOTE_NUMBER,
+QUOTING_SYSTEM,
+ENTITYLINEITEMID,
+LINE_ITEM_ID,
+PRODUCT,
+BANDWIDTH,
+SUB_BANDWIDTH,
+QUOTE_DATE,
+LOC_A_GLM_PL_ID,
+LOC_A_ADDR_LINE1,
+LOC_A_CITY,
+LOC_A_POST_CODE,
+COUNTRY_CODE_A,
+LOC_A_REGION,
+QUOTE_TYPE,
+ENTITYLINEITEMPRICEID,
+DIVERSITYCOMPLIANCEINDICATOR,
+DIVERSITYOPTIONNUMBER,
+ENTITYTYPEID,
+VENDOR,
+PRICETERMID,
+PRICEORIGINID,
+ISICB,
+CONTROLLINGNETWORKINDICATOR,
+COMMENTS,
+LIST_PRICE,
+REPORT_REGION,
+SOLUTIONID,
+DESCRIPTION,
+ISBUDGETARY,
+SI_COMMENTS,
+SI_DIVERSITY_COMMENTS,
+COG_Team_Selected,
+MRC,
+NRC,
+CURRENCYCODE
+)
+EOX
+editor:XY=720,110
+editor:Notes=Extracts IFO Data into object L_IFO.
+editor:propdef=Query|sql|1||None
+end:INSERT_INTO_L_IFO_7_2
+
+node:INSERT_INTO_L_IFO_3
+bretype:core::DB Execute
+editor:Label=INSERT INTO L_IFO
+editor:handle=5af5f470633755b9
+editor:sortkey=589034931f3c79f3_2
+input:589034fa78ca3f43/out6=^.5af5f4d5632c7440
+editor:bend=0=450|170
+editor:bend=0=590|230
+editor:bend=0=900|230
+prop:CommitFrequency=10000
+prop:DbInterface={{^EMEA_DEV1_DB_INTERFACE^}}
+encrypted:simple=nFZhmIpYZmvjMtRGF8lNF90Au1X/rz4=
+prop:DbService={{^EMEA_DEV1_DB_SERVICE^}}
+prop:DbUser={{^EMEA_DEV1_DB_USER^}}
+prop:Query=<<EOX
+insert into  L_IFO
+(
+MONTH_NAME,
+QUOTE_NUMBER,
+QUOTING_SYSTEM,
+PROD_INST,
+LINE_ITEM_ID,
+PRODUCT,
+BANDWIDTH,
+SUB_BANDWIDTH,
+QUOTE_DATE,
+LOC_A_GLM_PL_ID,
+LOC_A_ADDR_LINE1,
+LOC_A_CITY,
+LOC_A_POST_CODE,
+COUNTRY_CODE_A,
+LOC_A_REGION,
+QUOTE_TYPE,
+ENTITYLINEITEMPRICEID,
+DIVERSITYCOMPLIANCEINDICATOR,
+DIVERSITYOPTIONNUMBER,
+ENTITYTYPEID,
+VENDOR,
+PRICETERMID,
+PRICEORIGINID,
+ISICB,
+CONTROLLINGNETWORKINDICATOR,
+COMMENTS,
+LIST_PRICE,
+REPORT_REGION,
+SOLUTION_ID,
+DESCRIPTION,
+ISBUDGETARY,
+SI_COMMENTS,
+SI_DIVERSITY_COMMENTS,
+COG_Team_Selected,
+MRC,
+NRC,
+CURRENCYCODE,
+CREATE_DATETIME
+)
+values(:1,:2,:3,:4,:5,:6,:7,:8,to_date(:9,'YYYY-MM-DD'),:10,:11,:12,:13,:14,:15,:16,:17,:18,:19,:20,:21,:22,:23,:24,:25,:26,:27,:28,:29,:30,:31,:32,:33, :34,:35, :36, :37, SYSDATE)
+EOX
+prop:Script=<<EOX
+sqlNonSelect
+(
+  "{{^Query^}}",
+MONTH_NAME,
+QUOTE_NUMBER,
+QUOTING_SYSTEM,
+ENTITYLINEITEMID,
+LINE_ITEM_ID,
+PRODUCT,
+BANDWIDTH,
+SUB_BANDWIDTH,
+QUOTE_DATE,
+LOC_A_GLM_PL_ID,
+LOC_A_ADDR_LINE1,
+LOC_A_CITY,
+LOC_A_POST_CODE,
+COUNTRY_CODE_A,
+LOC_A_REGION,
+QUOTE_TYPE,
+ENTITYLINEITEMPRICEID,
+DIVERSITYCOMPLIANCEINDICATOR,
+DIVERSITYOPTIONNUMBER,
+ENTITYTYPEID,
+VENDOR,
+PRICETERMID,
+PRICEORIGINID,
+ISICB,
+CONTROLLINGNETWORKINDICATOR,
+COMMENTS,
+LIST_PRICE,
+REPORT_REGION,
+SOLUTIONID,
+DESCRIPTION,
+ISBUDGETARY,
+SI_COMMENTS,
+SI_DIVERSITY_COMMENTS,
+COG_Team_Selected,
+MRC,
+NRC,
+CURRENCYCODE
+)
+EOX
+editor:XY=1010,110
+editor:Notes=Extracts IFO Data into object L_IFO.
+editor:propdef=Query|sql|1||None
+end:INSERT_INTO_L_IFO_3
+
+node:INSERT_INTO_L_IFO_4
+bretype:core::DB Execute
+editor:Label=INSERT INTO L_IFO
+editor:handle=5af5f472319c2669
+editor:sortkey=589034931f3c79f3_3
+input:589034fa78ca3f43/out3=^.5af5f4d262713970
+prop:CommitFrequency=10000
+prop:DbInterface={{^EMEA_DEV1_DB_INTERFACE^}}
+encrypted:simple=nFZhmIpYZmvjMtRGF8lNF90Au1X/rz4=
+prop:DbService={{^EMEA_DEV1_DB_SERVICE^}}
+prop:DbUser={{^EMEA_DEV1_DB_USER^}}
+prop:Query=<<EOX
+insert into  L_IFO
+(
+MONTH_NAME,
+QUOTE_NUMBER,
+QUOTING_SYSTEM,
+PROD_INST,
+LINE_ITEM_ID,
+PRODUCT,
+BANDWIDTH,
+SUB_BANDWIDTH,
+QUOTE_DATE,
+LOC_A_GLM_PL_ID,
+LOC_A_ADDR_LINE1,
+LOC_A_CITY,
+LOC_A_POST_CODE,
+COUNTRY_CODE_A,
+LOC_A_REGION,
+QUOTE_TYPE,
+ENTITYLINEITEMPRICEID,
+DIVERSITYCOMPLIANCEINDICATOR,
+DIVERSITYOPTIONNUMBER,
+ENTITYTYPEID,
+VENDOR,
+PRICETERMID,
+PRICEORIGINID,
+ISICB,
+CONTROLLINGNETWORKINDICATOR,
+COMMENTS,
+LIST_PRICE,
+REPORT_REGION,
+SOLUTION_ID,
+DESCRIPTION,
+ISBUDGETARY,
+SI_COMMENTS,
+SI_DIVERSITY_COMMENTS,
+COG_Team_Selected,
+MRC,
+NRC,
+CURRENCYCODE,
+CREATE_DATETIME
+)
+values(:1,:2,:3,:4,:5,:6,:7,:8,to_date(:9,'YYYY-MM-DD'),:10,:11,:12,:13,:14,:15,:16,:17,:18,:19,:20,:21,:22,:23,:24,:25,:26,:27,:28,:29,:30,:31,:32,:33, :34,:35, :36, :37, SYSDATE)
+EOX
+prop:Script=<<EOX
+sqlNonSelect
+(
+  "{{^Query^}}",
+MONTH_NAME,
+QUOTE_NUMBER,
+QUOTING_SYSTEM,
+ENTITYLINEITEMID,
+LINE_ITEM_ID,
+PRODUCT,
+BANDWIDTH,
+SUB_BANDWIDTH,
+QUOTE_DATE,
+LOC_A_GLM_PL_ID,
+LOC_A_ADDR_LINE1,
+LOC_A_CITY,
+LOC_A_POST_CODE,
+COUNTRY_CODE_A,
+LOC_A_REGION,
+QUOTE_TYPE,
+ENTITYLINEITEMPRICEID,
+DIVERSITYCOMPLIANCEINDICATOR,
+DIVERSITYOPTIONNUMBER,
+ENTITYTYPEID,
+VENDOR,
+PRICETERMID,
+PRICEORIGINID,
+ISICB,
+CONTROLLINGNETWORKINDICATOR,
+COMMENTS,
+LIST_PRICE,
+REPORT_REGION,
+SOLUTIONID,
+DESCRIPTION,
+ISBUDGETARY,
+SI_COMMENTS,
+SI_DIVERSITY_COMMENTS,
+COG_Team_Selected,
+MRC,
+NRC,
+CURRENCYCODE
+)
+
+EOX
+editor:XY=720,350
+editor:Notes=Extracts IFO Data into object L_IFO.
+editor:propdef=Query|sql|1||None
+end:INSERT_INTO_L_IFO_4
+
+node:INSERT_INTO_L_IFO_5
+bretype:core::DB Execute
+editor:Label=INSERT INTO L_IFO
+editor:handle=5af5f47306936295
+editor:sortkey=589034931f3c79f3_4
+input:589034fa78ca3f43/out2=^.5af5f4d0070412b9
+editor:bend=0=450|410
+editor:bend=0=610|490
+editor:bend=0=890|490
+prop:CommitFrequency=10000
+prop:DbInterface={{^EMEA_DEV1_DB_INTERFACE^}}
+encrypted:simple=nFZhmIpYZmvjMtRGF8lNF8JPgXLTznUZdCHZKKmdqEwCPHXbp8rf0q5nfic=
+prop:DbService={{^EMEA_DEV1_DB_SERVICE^}}
+prop:DbUser={{^EMEA_DEV1_DB_USER^}}
+prop:Query=<<EOX
+insert into  L_IFO
+(
+MONTH_NAME,
+QUOTE_NUMBER,
+QUOTING_SYSTEM,
+PROD_INST,
+LINE_ITEM_ID,
+PRODUCT,
+BANDWIDTH,
+SUB_BANDWIDTH,
+QUOTE_DATE,
+LOC_A_GLM_PL_ID,
+LOC_A_ADDR_LINE1,
+LOC_A_CITY,
+LOC_A_POST_CODE,
+COUNTRY_CODE_A,
+LOC_A_REGION,
+QUOTE_TYPE,
+ENTITYLINEITEMPRICEID,
+DIVERSITYCOMPLIANCEINDICATOR,
+DIVERSITYOPTIONNUMBER,
+ENTITYTYPEID,
+VENDOR,
+PRICETERMID,
+PRICEORIGINID,
+ISICB,
+CONTROLLINGNETWORKINDICATOR,
+COMMENTS,
+LIST_PRICE,
+REPORT_REGION,
+SOLUTION_ID,
+DESCRIPTION,
+ISBUDGETARY,
+SI_COMMENTS,
+SI_DIVERSITY_COMMENTS,
+COG_Team_Selected,
+MRC,
+NRC,
+CURRENCYCODE,
+CREATE_DATETIME
+)
+values(:1,:2,:3,:4,:5,:6,:7,:8,to_date(:9,'YYYY-MM-DD'),:10,:11,:12,:13,:14,:15,:16,:17,:18,:19,:20,:21,:22,:23,:24,:25,:26,:27,:28,:29,:30,:31,:32,:33, :34,:35, :36, :37, SYSDATE)
+EOX
+prop:Script=<<EOX
+sqlNonSelect
+(
+  "{{^Query^}}",
+MONTH_NAME,
+QUOTE_NUMBER,
+QUOTING_SYSTEM,
+ENTITYLINEITEMID,
+LINE_ITEM_ID,
+PRODUCT,
+BANDWIDTH,
+SUB_BANDWIDTH,
+QUOTE_DATE,
+LOC_A_GLM_PL_ID,
+LOC_A_ADDR_LINE1,
+LOC_A_CITY,
+LOC_A_POST_CODE,
+COUNTRY_CODE_A,
+LOC_A_REGION,
+QUOTE_TYPE,
+ENTITYLINEITEMPRICEID,
+DIVERSITYCOMPLIANCEINDICATOR,
+DIVERSITYOPTIONNUMBER,
+ENTITYTYPEID,
+VENDOR,
+PRICETERMID,
+PRICEORIGINID,
+ISICB,
+CONTROLLINGNETWORKINDICATOR,
+COMMENTS,
+LIST_PRICE,
+REPORT_REGION,
+SOLUTIONID,
+DESCRIPTION,
+ISBUDGETARY,
+SI_COMMENTS,
+SI_DIVERSITY_COMMENTS,
+COG_Team_Selected,
+MRC,
+NRC,
+CURRENCYCODE
+)
+EOX
+editor:XY=1000,340
+editor:Notes=Extracts IFO Data into object L_IFO.
+editor:propdef=Query|sql|1||None
+end:INSERT_INTO_L_IFO_5
+
+node:INSERT_INTO_L_IFO_6
+bretype:core::DB Execute
+editor:Label=INSERT INTO L_IFO
+editor:handle=5af5f47370805a98
+editor:sortkey=589034931f3c79f3_5
+input:589034fa78ca3f43/out1=^.5af5f4cf446337a1
+editor:bend=0=450|470
+editor:bend=0=610|540
+editor:bend=0=1080|540
+prop:CommitFrequency=10000
+prop:DbInterface={{^EMEA_DEV1_DB_INTERFACE^}}
+encrypted:simple=nFZhmIpYZmvjMtRGF8lNF8JPgXLTznUZdCHZKKmdqEwCPHXbp8rf0q5nfic=
+prop:DbService={{^EMEA_DEV1_DB_SERVICE^}}
+prop:DbUser={{^EMEA_DEV1_DB_USER^}}
+prop:Query=<<EOX
+insert into  L_IFO
+(
+MONTH_NAME,
+QUOTE_NUMBER,
+QUOTING_SYSTEM,
+PROD_INST,
+LINE_ITEM_ID,
+PRODUCT,
+BANDWIDTH,
+SUB_BANDWIDTH,
+QUOTE_DATE,
+LOC_A_GLM_PL_ID,
+LOC_A_ADDR_LINE1,
+LOC_A_CITY,
+LOC_A_POST_CODE,
+COUNTRY_CODE_A,
+LOC_A_REGION,
+QUOTE_TYPE,
+ENTITYLINEITEMPRICEID,
+DIVERSITYCOMPLIANCEINDICATOR,
+DIVERSITYOPTIONNUMBER,
+ENTITYTYPEID,
+VENDOR,
+PRICETERMID,
+PRICEORIGINID,
+ISICB,
+CONTROLLINGNETWORKINDICATOR,
+COMMENTS,
+LIST_PRICE,
+REPORT_REGION,
+SOLUTION_ID,
+DESCRIPTION,
+ISBUDGETARY,
+SI_COMMENTS,
+SI_DIVERSITY_COMMENTS,
+COG_Team_Selected,
+MRC,
+NRC,
+CURRENCYCODE,
+CREATE_DATETIME
+)
+values(:1,:2,:3,:4,:5,:6,:7,:8,to_date(:9,'YYYY-MM-DD'),:10,:11,:12,:13,:14,:15,:16,:17,:18,:19,:20,:21,:22,:23,:24,:25,:26,:27,:28,:29,:30,:31,:32,:33, :34,:35, :36, :37, SYSDATE)
+EOX
+prop:Script=<<EOX
+sqlNonSelect
+(
+  "{{^Query^}}",
+MONTH_NAME,
+QUOTE_NUMBER,
+QUOTING_SYSTEM,
+ENTITYLINEITEMID,
+LINE_ITEM_ID,
+PRODUCT,
+BANDWIDTH,
+SUB_BANDWIDTH,
+QUOTE_DATE,
+LOC_A_GLM_PL_ID,
+LOC_A_ADDR_LINE1,
+LOC_A_CITY,
+LOC_A_POST_CODE,
+COUNTRY_CODE_A,
+LOC_A_REGION,
+QUOTE_TYPE,
+ENTITYLINEITEMPRICEID,
+DIVERSITYCOMPLIANCEINDICATOR,
+DIVERSITYOPTIONNUMBER,
+ENTITYTYPEID,
+VENDOR,
+PRICETERMID,
+PRICEORIGINID,
+ISICB,
+CONTROLLINGNETWORKINDICATOR,
+COMMENTS,
+LIST_PRICE,
+REPORT_REGION,
+SOLUTIONID,
+DESCRIPTION,
+ISBUDGETARY,
+SI_COMMENTS,
+SI_DIVERSITY_COMMENTS,
+COG_Team_Selected,
+MRC,
+NRC,
+CURRENCYCODE
+)
+EOX
+editor:XY=1220,340
+editor:Notes=Extracts IFO Data into object L_IFO.
+editor:propdef=Query|sql|1||None
+end:INSERT_INTO_L_IFO_6
+
+node:INSERT_INTO_L_IFO_7
+bretype:core::DB Execute
+editor:Label=INSERT INTO L_IFO
+editor:handle=5af5f47433b9294e
+editor:sortkey=589034931f3c79f3_6
+input:589034fa78ca3f43/out5=^.5af5f4d435501fa2
+editor:bend=0=450|230
+editor:bend=0=590|270
+editor:bend=0=1110|270
+prop:CommitFrequency=10000
+prop:DbInterface={{^EMEA_DEV1_DB_INTERFACE^}}
+encrypted:simple=nFZhmIpYZmvjMtRGF8lNF8JPgXLTznUZdCHZKKmdqEwCPHXbp8rf0q5nfic=
+prop:DbService={{^EMEA_DEV1_DB_SERVICE^}}
+prop:DbUser={{^EMEA_DEV1_DB_USER^}}
+prop:Query=<<EOX
+insert into  L_IFO
+(
+MONTH_NAME,
+QUOTE_NUMBER,
+QUOTING_SYSTEM,
+PROD_INST,
+LINE_ITEM_ID,
+PRODUCT,
+BANDWIDTH,
+SUB_BANDWIDTH,
+QUOTE_DATE,
+LOC_A_GLM_PL_ID,
+LOC_A_ADDR_LINE1,
+LOC_A_CITY,
+LOC_A_POST_CODE,
+COUNTRY_CODE_A,
+LOC_A_REGION,
+QUOTE_TYPE,
+ENTITYLINEITEMPRICEID,
+DIVERSITYCOMPLIANCEINDICATOR,
+DIVERSITYOPTIONNUMBER,
+ENTITYTYPEID,
+VENDOR,
+PRICETERMID,
+PRICEORIGINID,
+ISICB,
+CONTROLLINGNETWORKINDICATOR,
+COMMENTS,
+LIST_PRICE,
+REPORT_REGION,
+SOLUTION_ID,
+DESCRIPTION,
+ISBUDGETARY,
+SI_COMMENTS,
+SI_DIVERSITY_COMMENTS,
+COG_Team_Selected,
+MRC,
+NRC,
+CURRENCYCODE,
+CREATE_DATETIME
+)
+values(:1,:2,:3,:4,:5,:6,:7,:8,to_date(:9,'YYYY-MM-DD'),:10,:11,:12,:13,:14,:15,:16,:17,:18,:19,:20,:21,:22,:23,:24,:25,:26,:27,:28,:29,:30,:31,:32,:33, :34,:35, :36, :37, SYSDATE)
+EOX
+prop:Script=<<EOX
+sqlNonSelect
+(
+  "{{^Query^}}",
+MONTH_NAME,
+QUOTE_NUMBER,
+QUOTING_SYSTEM,
+ENTITYLINEITEMID,
+LINE_ITEM_ID,
+PRODUCT,
+BANDWIDTH,
+SUB_BANDWIDTH,
+QUOTE_DATE,
+LOC_A_GLM_PL_ID,
+LOC_A_ADDR_LINE1,
+LOC_A_CITY,
+LOC_A_POST_CODE,
+COUNTRY_CODE_A,
+LOC_A_REGION,
+QUOTE_TYPE,
+ENTITYLINEITEMPRICEID,
+DIVERSITYCOMPLIANCEINDICATOR,
+DIVERSITYOPTIONNUMBER,
+ENTITYTYPEID,
+VENDOR,
+PRICETERMID,
+PRICEORIGINID,
+ISICB,
+CONTROLLINGNETWORKINDICATOR,
+COMMENTS,
+LIST_PRICE,
+REPORT_REGION,
+SOLUTIONID,
+DESCRIPTION,
+ISBUDGETARY,
+SI_COMMENTS,
+SI_DIVERSITY_COMMENTS,
+COG_Team_Selected,
+MRC,
+NRC,
+CURRENCYCODE
+)
+EOX
+editor:XY=1220,110
+editor:Notes=Extracts IFO Data into object L_IFO.
+editor:propdef=Query|sql|1||None
+end:INSERT_INTO_L_IFO_7
+
+node:INSERT_INTO_L_IFO_8
+bretype:core::DB Execute
+editor:Label=INSERT INTO L_IFO
+editor:handle=5af5f475301665d5
+editor:sortkey=589034931f3c79f3_8
+input:589034fa78ca3f43/out4=^.5af5f4d345ec0042
+prop:CommitFrequency=10000
+prop:DbInterface={{^EMEA_DEV1_DB_INTERFACE^}}
+encrypted:simple=nFZhmIpYZmvjMtRGF8lNF8JPgXLTznUZdCHZKKmdqEwCPHXbp8rf0q5nfic=
+prop:DbService={{^EMEA_DEV1_DB_SERVICE^}}
+prop:DbUser={{^EMEA_DEV1_DB_USER^}}
+prop:Query=<<EOX
+insert into  L_IFO
+(
+MONTH_NAME,
+QUOTE_NUMBER,
+QUOTING_SYSTEM,
+PROD_INST,
+LINE_ITEM_ID,
+PRODUCT,
+BANDWIDTH,
+SUB_BANDWIDTH,
+QUOTE_DATE,
+LOC_A_GLM_PL_ID,
+LOC_A_ADDR_LINE1,
+LOC_A_CITY,
+LOC_A_POST_CODE,
+COUNTRY_CODE_A,
+LOC_A_REGION,
+QUOTE_TYPE,
+ENTITYLINEITEMPRICEID,
+DIVERSITYCOMPLIANCEINDICATOR,
+DIVERSITYOPTIONNUMBER,
+ENTITYTYPEID,
+VENDOR,
+PRICETERMID,
+PRICEORIGINID,
+ISICB,
+CONTROLLINGNETWORKINDICATOR,
+COMMENTS,
+LIST_PRICE,
+REPORT_REGION,
+SOLUTION_ID,
+DESCRIPTION,
+ISBUDGETARY,
+SI_COMMENTS,
+SI_DIVERSITY_COMMENTS,
+COG_Team_Selected,
+MRC,
+NRC,
+CURRENCYCODE,
+CREATE_DATETIME
+)
+values(:1,:2,:3,:4,:5,:6,:7,:8,to_date(:9,'YYYY-MM-DD'),:10,:11,:12,:13,:14,:15,:16,:17,:18,:19,:20,:21,:22,:23,:24,:25,:26,:27,:28,:29,:30,:31,:32,:33, :34,:35, :36, :37, SYSDATE)
+EOX
+prop:Script=<<EOX
+sqlNonSelect
+(
+  "{{^Query^}}",
+MONTH_NAME,
+QUOTE_NUMBER,
+QUOTING_SYSTEM,
+ENTITYLINEITEMID,
+LINE_ITEM_ID,
+PRODUCT,
+BANDWIDTH,
+SUB_BANDWIDTH,
+QUOTE_DATE,
+LOC_A_GLM_PL_ID,
+LOC_A_ADDR_LINE1,
+LOC_A_CITY,
+LOC_A_POST_CODE,
+COUNTRY_CODE_A,
+LOC_A_REGION,
+QUOTE_TYPE,
+ENTITYLINEITEMPRICEID,
+DIVERSITYCOMPLIANCEINDICATOR,
+DIVERSITYOPTIONNUMBER,
+ENTITYTYPEID,
+VENDOR,
+PRICETERMID,
+PRICEORIGINID,
+ISICB,
+CONTROLLINGNETWORKINDICATOR,
+COMMENTS,
+LIST_PRICE,
+REPORT_REGION,
+SOLUTIONID, 
+DESCRIPTION,
+ISBUDGETARY,
+SI_COMMENTS,
+SI_DIVERSITY_COMMENTS,
+COG_Team_Selected,
+MRC,
+NRC,
+CURRENCYCODE
+)
+EOX
+editor:XY=1400,290
+editor:Notes=Extracts IFO Data into object L_IFO.
+editor:propdef=Query|sql|1||None
+end:INSERT_INTO_L_IFO_8
+
+end:Insert_into_L_IFO
+
+end:IFO
+
+node:AMS
+bretype:core::Composite
+editor:Label=AMS
+editor:handle=5ade0c0459075ac6
+editor:sortkey=5ade0c0459075ac6
+inclock:/=IFO
+inclockxy:Inclock=110,50
+outclockxy:Outclock=230,50
+ineventxy:InEvent=20,200
+outeventxy:OutEvent=400,200
+editor:XY=760,200
+node:L_L_INTL_CAPBUILDING
+bretype:core::DB Truncate
+editor:Label=L_L_INTL_CAPBUILDING
+editor:handle=5ad8dbed54f9289e
+editor:sortkey=586b77c00cf574f4_4
+prop:CleanResults=ALL
+prop:DbInterface={{^EMEA_DEV1_DB_INTERFACE^}}
+encrypted:simple=nFZhmIpYZmvjMtRGF8lNF8JPgXLTznUZdCHZKKmdqEwCPHXbp8rf0q5nfic=
+prop:DbService={{^EMEA_DEV1_DB_SERVICE^}}
+prop:DbUser={{^EMEA_DEV1_DB_USER^}}
+prop:Script=<<EOX
+resultValue = "{{^CleanResults^}}".trim().toUpper().switch(
+	"NONE", false,
+	"ALL", sqlNonSelect("truncate table {{^Table^}}"),
+	"TODAY", sqlNonSelect("delete from {{^Table^}} where to_char({{^DateColumn=DATE_COLUMN_NOT_SET^}}, 'YYYYMMDD') = to_char(SYSDATE,'YYYYMMDD') "),
+	sqlNonSelect("delete from {{^Table^}} where {{^DateColumn=DATE_COLUMN_NOT_SET^}} = TO_DATE('{{^CleanResults^}}','YYYY-MM-DD') ")
+)
+	
+EOX
+prop:Table=L_L_INTL_CAPBUILDING
+editor:XY=140,270
+end:L_L_INTL_CAPBUILDING
+
+node:AMS_Data
+bretype:core::DB Query
+editor:Label=AMS Data
+editor:handle=5ad8dc2629bf6f9a
+editor:sortkey=5ad0dc971c64651c_3
+output:@40fd2c7444283da6/=
+inclock:/=L_L_INTL_CAPBUILDING
+prop:DbInterface={{^AMS_DB_INTERFACE^}}
+encrypted:simple=nFZhmIpYZmvjMtRGF8lNF8JPgXbT2GsCcjvfWKWKvVwAOXj1jY8=
+prop:DbService={{^AMS_DB_SERVICE^}}
+prop:DbUser={{^AMS_DB_USER^}}
+prop:SqlQuery=<<EOX
+select lic.*, licdMin.PARAVALUE MINIMUM_EVC, licdMax.PARAVALUE MAXIMUM_EVC from NDATARIFFS.L_INTL_CAPBUILDING lic
+left outer join NDATARIFFS.L_INTL_CAPBUILDING_DETAIL licdMin
+on licdMin.CAPID = lic.CAPID and licdMin.PARANAME = 'Minimum EVC'
+left outer join NDATARIFFS.L_INTL_CAPBUILDING_DETAIL licdMax
+on licdMax.CAPID = lic.CAPID and licdMax.PARANAME = 'Maximum EVC'
+EOX
+editor:XY=330,270
+end:AMS_Data
+
+node:Hash_Split
+bretype:core::Hash Split
+editor:handle=5af5cc3608fc7266
+editor:sortkey=5af352cc678e6c74
+input:@42d5a99836af7bc2/=AMS_Data.40fd2c7444283da6
+output:@42d5aa381aa13793/=
+output:@42d5a99879a10daa/=
+output:5af352db17007b14/out3=
+output:5af352de355f5ddb/out4=
+output:5af352e07d7c35c7/out5=
+output:5af352e1600c5dbf/out6=
+output:5af352e84d4f6a10/out7=
+prop:SplitFields=CAPID
+editor:XY=550,270
+end:Hash_Split
+
+node:Insert_L_L_INTL_CA_BUILDING_1
+bretype:core::Composite
+editor:Label=Insert L_L_INTL_CA_BUILDING 1
+editor:handle=5af5cc723129288b
+editor:sortkey=5af499645bd961be
+input:5af4996468a379a6/INSERT INTO L_L_INTL_CAPBUILDING - out1=Hash_Split.42d5aa381aa13793
+inputxy:0=160,180
+inputrotation:0=0
+editor:bend=0=780|240
+inclockxy:Inclock=110,50
+outclockxy:Outclock=230,50
+ineventxy:InEvent=20,200
+outeventxy:OutEvent=400,200
+editor:XY=890,150
+node:INSERT_INTO_L_L_INTL_CAPBUILDING_12
+bretype:core::DB Execute
+editor:Label=INSERT INTO L_L_INTL_CAPBUILDING
+editor:handle=5af5cc7279512c6a
+editor:sortkey=589034931f3c79f3_12
+input:589034fa78ca3f43/out1=^.5af4996468a379a6
+prop:CommitFrequency=10000
+prop:DbInterface={{^EMEA_DEV1_DB_INTERFACE^}}
+encrypted:simple=nFZhmIpYZmvjMtRGF8lNF8JPgXLTznUZdCHZKKmdqEwCPHXbp8rf0q5nfic=
+prop:DbService={{^EMEA_DEV1_DB_SERVICE^}}
+prop:DbUser={{^EMEA_DEV1_DB_USER^}}
+prop:Query=<<EOX
+insert into  L_L_INTL_CAPBUILDING
+(
+CAPID,
+VENDOROCN,
+COUNTRYCODE,
+CITY,
+POSTALCODE,
+BUILDING_ID,
+LATITUDE,
+LONGITUDE,
+VCRD,
+HCRD,
+STREETNAME,
+HOUSENUMBER,
+CITYNETWORK,
+ZONE,
+GATEWAY,
+MDF,
+SKYLINECODE,
+CODE1141,
+UPDATEIND,
+USERID,
+TRFDATE,
+GLMLOCATIONID,
+CROSSSTREET,
+ETH_LV3_HOMINGCLLI,
+ETH_LVA_HOMINGCLLI,
+PRICINGCITY,
+SPECIALCASE,
+PRODUCTTYPE,
+ADDRESSRATE,
+MINIMUM_EVC,
+MAXIMUM_EVC,
+CREATE_DATETIME
+)
+values(:1,:2,:3,:4,:5,:6,:7,:8,:9,:10,:11,:12,:13,:14,:15,:16,:17,:18,:19,:20,:21,:22,:23,:24,:25,:26,:27,:28,:29,:30,:31,SYSDATE)
+EOX
+prop:Script=<<EOX
+sqlNonSelect
+(
+  "{{^Query^}}",
+CAPID,
+VENDOROCN,
+COUNTRYCODE,
+CITY,
+POSTALCODE,
+BUILDING_ID,
+LATITUDE,
+LONGITUDE,
+VCRD,
+HCRD,
+STREETNAME,
+HOUSENUMBER,
+CITYNETWORK,
+ZONE,
+GATEWAY,
+MDF,
+SKYLINECODE,
+CODE1141,
+UPDATEIND,
+USERID,
+TRFDATE,
+GLMLOCATIONID,
+CROSSSTREET,
+ETH_LV3_HOMINGCLLI,
+ETH_LVA_HOMINGCLLI,
+PRICINGCITY,
+SPECIALCASE,
+PRODUCTTYPE,
+ADDRESSRATE,
+MINIMUM_EVC,
+MAXIMUM_EVC
+
+)
+EOX
+editor:XY=410,180
+editor:propdef=Query|sql|1||None
+end:INSERT_INTO_L_L_INTL_CAPBUILDING_12
+
+end:Insert_L_L_INTL_CA_BUILDING_1
+
+node:Insert_L_L_INTL_CA_BUILDING_2
+bretype:core::Composite
+editor:Label=Insert L_L_INTL_CA_BUILDING 2
+editor:handle=5af5cc89551b6435
+editor:sortkey=5af499645bd961be_2
+input:5af4996468a379a6/INSERT INTO L_L_INTL_CAPBUILDING - out1=Hash_Split.42d5a99879a10daa
+inputxy:0=160,180
+inputrotation:0=0
+editor:bend=0=1130|250
+inclockxy:Inclock=110,50
+outclockxy:Outclock=230,50
+ineventxy:InEvent=20,200
+outeventxy:OutEvent=400,200
+editor:XY=1250,150
+node:INSERT_INTO_L_L_INTL_CAPBUILDING_12
+bretype:core::DB Execute
+editor:Label=INSERT INTO L_L_INTL_CAPBUILDING
+editor:handle=5af5cc8928986d8f
+editor:sortkey=589034931f3c79f3_12
+input:589034fa78ca3f43/out1=^.5af4996468a379a6
+prop:CommitFrequency=10000
+prop:DbInterface={{^EMEA_DEV1_DB_INTERFACE^}}
+encrypted:simple=nFZhmIpYZmvjMtRGF8lNF8JPgXLTznUZdCHZKKmdqEwCPHXbp8rf0q5nfic=
+prop:DbService={{^EMEA_DEV1_DB_SERVICE^}}
+prop:DbUser={{^EMEA_DEV1_DB_USER^}}
+prop:Query=<<EOX
+insert into  L_L_INTL_CAPBUILDING
+(
+CAPID,
+VENDOROCN,
+COUNTRYCODE,
+CITY,
+POSTALCODE,
+BUILDING_ID,
+LATITUDE,
+LONGITUDE,
+VCRD,
+HCRD,
+STREETNAME,
+HOUSENUMBER,
+CITYNETWORK,
+ZONE,
+GATEWAY,
+MDF,
+SKYLINECODE,
+CODE1141,
+UPDATEIND,
+USERID,
+TRFDATE,
+GLMLOCATIONID,
+CROSSSTREET,
+ETH_LV3_HOMINGCLLI,
+ETH_LVA_HOMINGCLLI,
+PRICINGCITY,
+SPECIALCASE,
+PRODUCTTYPE,
+ADDRESSRATE,
+MINIMUM_EVC,
+MAXIMUM_EVC,
+CREATE_DATETIME
+)
+values(:1,:2,:3,:4,:5,:6,:7,:8,:9,:10,:11,:12,:13,:14,:15,:16,:17,:18,:19,:20,:21,:22,:23,:24,:25,:26,:27,:28,:29,:30,:31,SYSDATE)
+EOX
+prop:Script=<<EOX
+sqlNonSelect
+(
+  "{{^Query^}}",
+CAPID,
+VENDOROCN,
+COUNTRYCODE,
+CITY,
+POSTALCODE,
+BUILDING_ID,
+LATITUDE,
+LONGITUDE,
+VCRD,
+HCRD,
+STREETNAME,
+HOUSENUMBER,
+CITYNETWORK,
+ZONE,
+GATEWAY,
+MDF,
+SKYLINECODE,
+CODE1141,
+UPDATEIND,
+USERID,
+TRFDATE,
+GLMLOCATIONID,
+CROSSSTREET,
+ETH_LV3_HOMINGCLLI,
+ETH_LVA_HOMINGCLLI,
+PRICINGCITY,
+SPECIALCASE,
+PRODUCTTYPE,
+ADDRESSRATE,
+MINIMUM_EVC,
+MAXIMUM_EVC
+
+)
+EOX
+editor:XY=410,180
+editor:propdef=Query|sql|1||None
+end:INSERT_INTO_L_L_INTL_CAPBUILDING_12
+
+end:Insert_L_L_INTL_CA_BUILDING_2
+
+node:Insert_L_L_INTL_CA_BUILDING_3
+bretype:core::Composite
+editor:Label=Insert L_L_INTL_CA_BUILDING 3
+editor:handle=5af5cc8f5b8636bf
+editor:sortkey=5af499645bd961be_3
+input:5af4996468a379a6/INSERT INTO L_L_INTL_CAPBUILDING - out1=Hash_Split.5af352db17007b14
+inputxy:0=160,180
+inputrotation:0=0
+editor:bend=0=1440|260
+inclockxy:Inclock=110,50
+outclockxy:Outclock=230,50
+ineventxy:InEvent=20,200
+outeventxy:OutEvent=400,200
+editor:XY=1570,150
+node:INSERT_INTO_L_L_INTL_CAPBUILDING_12
+bretype:core::DB Execute
+editor:Label=INSERT INTO L_L_INTL_CAPBUILDING
+editor:handle=5af5cc8f4c534a0b
+editor:sortkey=589034931f3c79f3_12
+input:589034fa78ca3f43/out1=^.5af4996468a379a6
+prop:CommitFrequency=10000
+prop:DbInterface={{^EMEA_DEV1_DB_INTERFACE^}}
+encrypted:simple=nFZhmIpYZmvjMtRGF8lNF8JPgXLTznUZdCHZKKmdqEwCPHXbp8rf0q5nfic=
+prop:DbService={{^EMEA_DEV1_DB_SERVICE^}}
+prop:DbUser={{^EMEA_DEV1_DB_USER^}}
+prop:Query=<<EOX
+insert into  L_L_INTL_CAPBUILDING
+(
+CAPID,
+VENDOROCN,
+COUNTRYCODE,
+CITY,
+POSTALCODE,
+BUILDING_ID,
+LATITUDE,
+LONGITUDE,
+VCRD,
+HCRD,
+STREETNAME,
+HOUSENUMBER,
+CITYNETWORK,
+ZONE,
+GATEWAY,
+MDF,
+SKYLINECODE,
+CODE1141,
+UPDATEIND,
+USERID,
+TRFDATE,
+GLMLOCATIONID,
+CROSSSTREET,
+ETH_LV3_HOMINGCLLI,
+ETH_LVA_HOMINGCLLI,
+PRICINGCITY,
+SPECIALCASE,
+PRODUCTTYPE,
+ADDRESSRATE,
+MINIMUM_EVC,
+MAXIMUM_EVC,
+CREATE_DATETIME
+)
+values(:1,:2,:3,:4,:5,:6,:7,:8,:9,:10,:11,:12,:13,:14,:15,:16,:17,:18,:19,:20,:21,:22,:23,:24,:25,:26,:27,:28,:29,:30,:31,SYSDATE)
+EOX
+prop:Script=<<EOX
+sqlNonSelect
+(
+  "{{^Query^}}",
+CAPID,
+VENDOROCN,
+COUNTRYCODE,
+CITY,
+POSTALCODE,
+BUILDING_ID,
+LATITUDE,
+LONGITUDE,
+VCRD,
+HCRD,
+STREETNAME,
+HOUSENUMBER,
+CITYNETWORK,
+ZONE,
+GATEWAY,
+MDF,
+SKYLINECODE,
+CODE1141,
+UPDATEIND,
+USERID,
+TRFDATE,
+GLMLOCATIONID,
+CROSSSTREET,
+ETH_LV3_HOMINGCLLI,
+ETH_LVA_HOMINGCLLI,
+PRICINGCITY,
+SPECIALCASE,
+PRODUCTTYPE,
+ADDRESSRATE,
+MINIMUM_EVC,
+MAXIMUM_EVC
+
+)
+EOX
+editor:XY=410,180
+editor:propdef=Query|sql|1||None
+end:INSERT_INTO_L_L_INTL_CAPBUILDING_12
+
+end:Insert_L_L_INTL_CA_BUILDING_3
+
+node:Insert_L_L_INTL_CA_BUILDING_7
+bretype:core::Composite
+editor:Label=Insert L_L_INTL_CA_BUILDING 7
+editor:handle=5af5ccb06a0f6670
+editor:sortkey=5af499645bd961be_4
+input:5af4996468a379a6/INSERT INTO L_L_INTL_CAPBUILDING - out1=Hash_Split.5af352e84d4f6a10
+inputxy:0=160,180
+inputrotation:0=0
+editor:bend=0=780|300
+inclockxy:Inclock=110,50
+outclockxy:Outclock=230,50
+ineventxy:InEvent=20,200
+outeventxy:OutEvent=400,200
+editor:XY=890,390
+node:INSERT_INTO_L_L_INTL_CAPBUILDING_12
+bretype:core::DB Execute
+editor:Label=INSERT INTO L_L_INTL_CAPBUILDING
+editor:handle=5af5ccb02c275ba1
+editor:sortkey=589034931f3c79f3_12
+input:589034fa78ca3f43/out1=^.5af4996468a379a6
+prop:CommitFrequency=10000
+prop:DbInterface={{^EMEA_DEV1_DB_INTERFACE^}}
+encrypted:simple=nFZhmIpYZmvjMtRGF8lNF8JPgXLTznUZdCHZKKmdqEwCPHXbp8rf0q5nfic=
+prop:DbService={{^EMEA_DEV1_DB_SERVICE^}}
+prop:DbUser={{^EMEA_DEV1_DB_USER^}}
+prop:Query=<<EOX
+insert into  L_L_INTL_CAPBUILDING
+(
+CAPID,
+VENDOROCN,
+COUNTRYCODE,
+CITY,
+POSTALCODE,
+BUILDING_ID,
+LATITUDE,
+LONGITUDE,
+VCRD,
+HCRD,
+STREETNAME,
+HOUSENUMBER,
+CITYNETWORK,
+ZONE,
+GATEWAY,
+MDF,
+SKYLINECODE,
+CODE1141,
+UPDATEIND,
+USERID,
+TRFDATE,
+GLMLOCATIONID,
+CROSSSTREET,
+ETH_LV3_HOMINGCLLI,
+ETH_LVA_HOMINGCLLI,
+PRICINGCITY,
+SPECIALCASE,
+PRODUCTTYPE,
+ADDRESSRATE,
+MINIMUM_EVC,
+MAXIMUM_EVC,
+CREATE_DATETIME
+)
+values(:1,:2,:3,:4,:5,:6,:7,:8,:9,:10,:11,:12,:13,:14,:15,:16,:17,:18,:19,:20,:21,:22,:23,:24,:25,:26,:27,:28,:29,:30,:31,SYSDATE)
+EOX
+prop:Script=<<EOX
+sqlNonSelect
+(
+  "{{^Query^}}",
+CAPID,
+VENDOROCN,
+COUNTRYCODE,
+CITY,
+POSTALCODE,
+BUILDING_ID,
+LATITUDE,
+LONGITUDE,
+VCRD,
+HCRD,
+STREETNAME,
+HOUSENUMBER,
+CITYNETWORK,
+ZONE,
+GATEWAY,
+MDF,
+SKYLINECODE,
+CODE1141,
+UPDATEIND,
+USERID,
+TRFDATE,
+GLMLOCATIONID,
+CROSSSTREET,
+ETH_LV3_HOMINGCLLI,
+ETH_LVA_HOMINGCLLI,
+PRICINGCITY,
+SPECIALCASE,
+PRODUCTTYPE,
+ADDRESSRATE,
+MINIMUM_EVC,
+MAXIMUM_EVC
+
+)
+EOX
+editor:XY=410,180
+editor:propdef=Query|sql|1||None
+end:INSERT_INTO_L_L_INTL_CAPBUILDING_12
+
+end:Insert_L_L_INTL_CA_BUILDING_7
+
+node:Insert_L_L_INTL_CA_BUILDING_6
+bretype:core::Composite
+editor:Label=Insert L_L_INTL_CA_BUILDING 6
+editor:handle=5af5ccb40ca7539b
+editor:sortkey=5af499645bd961be_5
+input:5af4996468a379a6/INSERT INTO L_L_INTL_CAPBUILDING - out1=Hash_Split.5af352e1600c5dbf
+inputxy:0=160,180
+inputrotation:0=0
+editor:bend=0=1130|290
+inclockxy:Inclock=110,50
+outclockxy:Outclock=230,50
+ineventxy:InEvent=20,200
+outeventxy:OutEvent=400,200
+editor:XY=1250,390
+node:INSERT_INTO_L_L_INTL_CAPBUILDING_12
+bretype:core::DB Execute
+editor:Label=INSERT INTO L_L_INTL_CAPBUILDING
+editor:handle=5af5ccb45a8210b7
+editor:sortkey=589034931f3c79f3_12
+input:589034fa78ca3f43/out1=^.5af4996468a379a6
+prop:CommitFrequency=10000
+prop:DbInterface={{^EMEA_DEV1_DB_INTERFACE^}}
+encrypted:simple=nFZhmIpYZmvjMtRGF8lNF8JPgXLTznUZdCHZKKmdqEwCPHXbp8rf0q5nfic=
+prop:DbService={{^EMEA_DEV1_DB_SERVICE^}}
+prop:DbUser={{^EMEA_DEV1_DB_USER^}}
+prop:Query=<<EOX
+insert into  L_L_INTL_CAPBUILDING
+(
+CAPID,
+VENDOROCN,
+COUNTRYCODE,
+CITY,
+POSTALCODE,
+BUILDING_ID,
+LATITUDE,
+LONGITUDE,
+VCRD,
+HCRD,
+STREETNAME,
+HOUSENUMBER,
+CITYNETWORK,
+ZONE,
+GATEWAY,
+MDF,
+SKYLINECODE,
+CODE1141,
+UPDATEIND,
+USERID,
+TRFDATE,
+GLMLOCATIONID,
+CROSSSTREET,
+ETH_LV3_HOMINGCLLI,
+ETH_LVA_HOMINGCLLI,
+PRICINGCITY,
+SPECIALCASE,
+PRODUCTTYPE,
+ADDRESSRATE,
+MINIMUM_EVC,
+MAXIMUM_EVC,
+CREATE_DATETIME
+)
+values(:1,:2,:3,:4,:5,:6,:7,:8,:9,:10,:11,:12,:13,:14,:15,:16,:17,:18,:19,:20,:21,:22,:23,:24,:25,:26,:27,:28,:29,:30,:31,SYSDATE)
+EOX
+prop:Script=<<EOX
+sqlNonSelect
+(
+  "{{^Query^}}",
+CAPID,
+VENDOROCN,
+COUNTRYCODE,
+CITY,
+POSTALCODE,
+BUILDING_ID,
+LATITUDE,
+LONGITUDE,
+VCRD,
+HCRD,
+STREETNAME,
+HOUSENUMBER,
+CITYNETWORK,
+ZONE,
+GATEWAY,
+MDF,
+SKYLINECODE,
+CODE1141,
+UPDATEIND,
+USERID,
+TRFDATE,
+GLMLOCATIONID,
+CROSSSTREET,
+ETH_LV3_HOMINGCLLI,
+ETH_LVA_HOMINGCLLI,
+PRICINGCITY,
+SPECIALCASE,
+PRODUCTTYPE,
+ADDRESSRATE,
+MINIMUM_EVC,
+MAXIMUM_EVC
+
+)
+EOX
+editor:XY=410,180
+editor:propdef=Query|sql|1||None
+end:INSERT_INTO_L_L_INTL_CAPBUILDING_12
+
+end:Insert_L_L_INTL_CA_BUILDING_6
+
+node:Insert_L_L_INTL_CA_BUILDING_5
+bretype:core::Composite
+editor:Label=Insert L_L_INTL_CA_BUILDING 5
+editor:handle=5af5ccb9079f3286
+editor:sortkey=5af499645bd961be_6
+input:5af4996468a379a6/INSERT INTO L_L_INTL_CAPBUILDING - out1=Hash_Split.5af352e07d7c35c7
+inputxy:0=160,180
+inputrotation:0=0
+editor:bend=0=1440|280
+inclockxy:Inclock=110,50
+outclockxy:Outclock=230,50
+ineventxy:InEvent=20,200
+outeventxy:OutEvent=400,200
+editor:XY=1570,390
+node:INSERT_INTO_L_L_INTL_CAPBUILDING_12
+bretype:core::DB Execute
+editor:Label=INSERT INTO L_L_INTL_CAPBUILDING
+editor:handle=5af5ccb977071516
+editor:sortkey=589034931f3c79f3_12
+input:589034fa78ca3f43/out1=^.5af4996468a379a6
+prop:CommitFrequency=10000
+prop:DbInterface={{^EMEA_DEV1_DB_INTERFACE^}}
+encrypted:simple=nFZhmIpYZmvjMtRGF8lNF8JPgXLTznUZdCHZKKmdqEwCPHXbp8rf0q5nfic=
+prop:DbService={{^EMEA_DEV1_DB_SERVICE^}}
+prop:DbUser={{^EMEA_DEV1_DB_USER^}}
+prop:Query=<<EOX
+insert into  L_L_INTL_CAPBUILDING
+(
+CAPID,
+VENDOROCN,
+COUNTRYCODE,
+CITY,
+POSTALCODE,
+BUILDING_ID,
+LATITUDE,
+LONGITUDE,
+VCRD,
+HCRD,
+STREETNAME,
+HOUSENUMBER,
+CITYNETWORK,
+ZONE,
+GATEWAY,
+MDF,
+SKYLINECODE,
+CODE1141,
+UPDATEIND,
+USERID,
+TRFDATE,
+GLMLOCATIONID,
+CROSSSTREET,
+ETH_LV3_HOMINGCLLI,
+ETH_LVA_HOMINGCLLI,
+PRICINGCITY,
+SPECIALCASE,
+PRODUCTTYPE,
+ADDRESSRATE,
+MINIMUM_EVC,
+MAXIMUM_EVC,
+CREATE_DATETIME
+)
+values(:1,:2,:3,:4,:5,:6,:7,:8,:9,:10,:11,:12,:13,:14,:15,:16,:17,:18,:19,:20,:21,:22,:23,:24,:25,:26,:27,:28,:29,:30,:31,SYSDATE)
+EOX
+prop:Script=<<EOX
+sqlNonSelect
+(
+  "{{^Query^}}",
+CAPID,
+VENDOROCN,
+COUNTRYCODE,
+CITY,
+POSTALCODE,
+BUILDING_ID,
+LATITUDE,
+LONGITUDE,
+VCRD,
+HCRD,
+STREETNAME,
+HOUSENUMBER,
+CITYNETWORK,
+ZONE,
+GATEWAY,
+MDF,
+SKYLINECODE,
+CODE1141,
+UPDATEIND,
+USERID,
+TRFDATE,
+GLMLOCATIONID,
+CROSSSTREET,
+ETH_LV3_HOMINGCLLI,
+ETH_LVA_HOMINGCLLI,
+PRICINGCITY,
+SPECIALCASE,
+PRODUCTTYPE,
+ADDRESSRATE,
+MINIMUM_EVC,
+MAXIMUM_EVC
+
+)
+EOX
+editor:XY=410,180
+editor:propdef=Query|sql|1||None
+end:INSERT_INTO_L_L_INTL_CAPBUILDING_12
+
+end:Insert_L_L_INTL_CA_BUILDING_5
+
+node:Insert_L_L_INTL_CA_BUILDING_4
+bretype:core::Composite
+editor:Label=Insert L_L_INTL_CA_BUILDING 4
+editor:handle=5af5ccc218ec7780
+editor:sortkey=5af499645bd961be_7
+input:5af4996468a379a6/INSERT INTO L_L_INTL_CAPBUILDING - out1=Hash_Split.5af352de355f5ddb
+inputxy:0=160,180
+inputrotation:0=0
+inclockxy:Inclock=110,50
+outclockxy:Outclock=230,50
+ineventxy:InEvent=20,200
+outeventxy:OutEvent=400,200
+editor:XY=1770,270
+node:INSERT_INTO_L_L_INTL_CAPBUILDING_12
+bretype:core::DB Execute
+editor:Label=INSERT INTO L_L_INTL_CAPBUILDING
+editor:handle=5af5ccc25a397ee0
+editor:sortkey=589034931f3c79f3_12
+input:589034fa78ca3f43/out1=^.5af4996468a379a6
+prop:CommitFrequency=10000
+prop:DbInterface={{^EMEA_DEV1_DB_INTERFACE^}}
+encrypted:simple=nFZhmIpYZmvjMtRGF8lNF8JPgXLTznUZdCHZKKmdqEwCPHXbp8rf0q5nfic=
+prop:DbService={{^EMEA_DEV1_DB_SERVICE^}}
+prop:DbUser={{^EMEA_DEV1_DB_USER^}}
+prop:Query=<<EOX
+insert into  L_L_INTL_CAPBUILDING
+(
+CAPID,
+VENDOROCN,
+COUNTRYCODE,
+CITY,
+POSTALCODE,
+BUILDING_ID,
+LATITUDE,
+LONGITUDE,
+VCRD,
+HCRD,
+STREETNAME,
+HOUSENUMBER,
+CITYNETWORK,
+ZONE,
+GATEWAY,
+MDF,
+SKYLINECODE,
+CODE1141,
+UPDATEIND,
+USERID,
+TRFDATE,
+GLMLOCATIONID,
+CROSSSTREET,
+ETH_LV3_HOMINGCLLI,
+ETH_LVA_HOMINGCLLI,
+PRICINGCITY,
+SPECIALCASE,
+PRODUCTTYPE,
+ADDRESSRATE,
+MINIMUM_EVC,
+MAXIMUM_EVC,
+CREATE_DATETIME
+)
+values(:1,:2,:3,:4,:5,:6,:7,:8,:9,:10,:11,:12,:13,:14,:15,:16,:17,:18,:19,:20,:21,:22,:23,:24,:25,:26,:27,:28,:29,:30,:31,SYSDATE)
+EOX
+prop:Script=<<EOX
+sqlNonSelect
+(
+  "{{^Query^}}",
+CAPID,
+VENDOROCN,
+COUNTRYCODE,
+CITY,
+POSTALCODE,
+BUILDING_ID,
+LATITUDE,
+LONGITUDE,
+VCRD,
+HCRD,
+STREETNAME,
+HOUSENUMBER,
+CITYNETWORK,
+ZONE,
+GATEWAY,
+MDF,
+SKYLINECODE,
+CODE1141,
+UPDATEIND,
+USERID,
+TRFDATE,
+GLMLOCATIONID,
+CROSSSTREET,
+ETH_LV3_HOMINGCLLI,
+ETH_LVA_HOMINGCLLI,
+PRICINGCITY,
+SPECIALCASE,
+PRODUCTTYPE,
+ADDRESSRATE,
+MINIMUM_EVC,
+MAXIMUM_EVC
+
+)
+EOX
+editor:XY=410,180
+editor:propdef=Query|sql|1||None
+end:INSERT_INTO_L_L_INTL_CAPBUILDING_12
+
+end:Insert_L_L_INTL_CA_BUILDING_4
+
+end:AMS
+
+node:AMS_Detail2
+bretype:core::Composite
+editor:Label=AMS Detail2
+editor:handle=5b60db100b27169f
+editor:sortkey=5ade0c0459075ac6_2
+inclock:/=IFO
+inclockxy:Inclock=110,50
+outclockxy:Outclock=230,50
+ineventxy:InEvent=20,200
+outeventxy:OutEvent=400,200
+editor:XY=810,470
+node:AMS_DETAIL
+bretype:core::DB Truncate
+editor:Label=AMS_DETAIL
+editor:handle=5b60db1021ee250f
+editor:sortkey=586b77c00cf574f4_4
+prop:CleanResults=ALL
+prop:DbInterface={{^EMEA_DEV1_DB_INTERFACE^}}
+encrypted:simple=nFZhmIpYZmvjMtRGF8lNF8JPgXLTznUZdCHZKKmdqEwCPHXbp8rf0q5nfic=
+prop:DbService={{^EMEA_DEV1_DB_SERVICE^}}
+prop:DbUser={{^EMEA_DEV1_DB_USER^}}
+prop:Script=<<EOX
+resultValue = "{{^CleanResults^}}".trim().toUpper().switch(
+	"NONE", false,
+	"ALL", sqlNonSelect("truncate table {{^Table^}}"),
+	"TODAY", sqlNonSelect("delete from {{^Table^}} where to_char({{^DateColumn=DATE_COLUMN_NOT_SET^}}, 'YYYYMMDD') = to_char(SYSDATE,'YYYYMMDD') "),
+	sqlNonSelect("delete from {{^Table^}} where {{^DateColumn=DATE_COLUMN_NOT_SET^}} = TO_DATE('{{^CleanResults^}}','YYYY-MM-DD') ")
+)
+	
+EOX
+prop:Table=AMS_DETAIL
+editor:XY=140,270
+end:AMS_DETAIL
+
+node:AMS_Detail_Data
+bretype:core::DB Query
+editor:Label=AMS Detail Data
+editor:handle=5b60db1061f1782d
+editor:sortkey=5ad0dc971c64651c
+output:@40fd2c7444283da6/=
+inclock:/=L_L_INTL_CAPBUILDING
+inclock:/=AMS_DETAIL
+prop:DbInterface={{^AMS_DB_INTERFACE^}}
+encrypted:simple=nFZhmIpYZmvjMtRGF8lNF8JPgXbT2GsCcjvfWKWKvVwAOXj1jY8=
+prop:DbService={{^AMS_DB_SERVICE^}}
+prop:DbUser={{^AMS_DB_USER^}}
+prop:SqlQuery=<<EOX
+SELECT distinct
+    C_CARRIERTELCO.CXRTELCOOCN,
+    C_CARRIERTELCO.CXRTELCONAME,
+    TO_CHAR(C_CARRIERTELCO.TRFDATE, 'MON YYYY')
+    AS VENDORDATE, Q2.COUNTRYCODE,
+    C_COUNTRY.CTRYNAME,
+    NVL(C_CARRIERTELCO_DETAIL.PARAVALUE,
+    C_COUNTRY.CURRENCY_ISO_CODE) AS CURRENCYCODE,
+    Q4.ISBUDGETARY AS ISBUDGETARY, max(Q2.BUILDINGLISTDATE) as BUILDINGLISTDATE,
+    Q3.COMPONENTFILEDATE, Q4.LV3_LVA, Q4.NNI_PtToPt,
+    Q4.BANDCOMMITRATEMIN, Q4.BANDCOMMITRATEMAX,
+    NVL(CTD2.PARAVALUE, 'N') AS OnNet_City_PostalCode_Only,
+    NVL(CTD3.PARAVALUE, 'N') AS OnNet_Country_City_Only,
+    Q2.glmlocationid,
+    Q2.citynetwork,
+    Q2.postalcode,
+    Q2.capid,
+    Q2.producttype
+FROM NDATARIFFS.C_CARRIERTELCO, NDATARIFFS.C_COUNTRY, NDATARIFFS.C_CARRIERTELCO_DETAIL,
+        (SELECT CAPID, VENDOROCN, TO_CHAR(MAX(TRFDATE), 'MM/DD/YYYY')
+           AS BUILDINGLISTDATE,  countrycode, glmlocationid,citynetwork,postalcode, producttype
+      FROM NDATARIFFS.L_INTL_CAPBUILDING
+      GROUP BY CAPID,VENDOROCN, countrycode, glmlocationid,citynetwork,postalcode, producttype) Q2,
+        (SELECT CARRIER, TO_CHAR(MAX(L_INTL_COMPONENT.TRFDATE),
+           'MM/DD/YYYY') AS COMPONENTFILEDATE
+      FROM NDATARIFFS.L_INTL_COMPONENT, NDATARIFFS.C_CMPTCHARGEID
+      WHERE L_INTL_COMPONENT.COMPONENTID = C_CMPTCHARGEID.COMPONENTID
+      GROUP BY CARRIER) Q3,
+        (SELECT carrier, bridgingtype AS LV3_LVA, linktype AS NNI_PtToPt,
+           MIN(CASE UPPER(BANDUNIT)
+           WHEN 'GB' THEN BANDCOMMITRATEMIN * 1000 ELSE BANDCOMMITRATEMIN
+            END) AS BANDCOMMITRATEMIN,
+           MAX(CASE UPPER(BANDUNIT)
+           WHEN 'GB' THEN BANDCOMMITRATEMAX * 1000 ELSE BANDCOMMITRATEMAX
+            END) AS BANDCOMMITRATEMAX, MAX(ISBUDGETARY)
+           AS ISBUDGETARY
+      FROM NDATARIFFS.C_CMPTCHARGEID, NDATARIFFS.L_INTL_COMPONENT
+      WHERE C_CMPTCHARGEID.componentid = L_INTL_COMPONENT.componentid
+      GROUP BY carrier, bridgingtype, linktype
+      ORDER BY carrier, bridgingtype, linktype) Q4,
+    NDATARIFFS.C_CARRIERTELCO_DETAIL CTD2,
+    NDATARIFFS.C_CARRIERTELCO_DETAIL CTD3
+WHERE CXRTELCOALPHACD = 'LVLC' AND CATEGORY = 'INTL' AND
+    C_CARRIERTELCO.CTRYCODE = C_COUNTRY.CTRYCODE(+) AND
+    C_CARRIERTELCO.CXRTELCOOCN = C_CARRIERTELCO_DETAIL.CXRTELCOOCN
+     (+) AND
+    C_CARRIERTELCO_DETAIL.PARANAME (+) = 'Vendor Currency Code' AND
+     C_CARRIERTELCO.CXRTELCOOCN = Q2.VENDOROCN (+) AND
+    C_CARRIERTELCO.CXRTELCOOCN = Q3.CARRIER (+) AND
+    C_CARRIERTELCO.CXRTELCOOCN = Q4.CARRIER (+) AND
+    C_CARRIERTELCO.CXRTELCOOCN = CTD2.CXRTELCOOCN (+) AND
+    CTD2.PARANAME (+) = 'OnNet_City_PostalCode_Only' AND
+    C_CARRIERTELCO.CXRTELCOOCN = CTD3.CXRTELCOOCN (+) AND
+    CTD3.PARANAME (+) = 'OnNet_Country_City_Only'
+    group by
+    C_CARRIERTELCO.CXRTELCOOCN,
+    C_CARRIERTELCO.CXRTELCONAME,
+    TO_CHAR(C_CARRIERTELCO.TRFDATE, 'MON YYYY'), Q2.COUNTRYCODE,
+    C_COUNTRY.CTRYNAME,
+    NVL(C_CARRIERTELCO_DETAIL.PARAVALUE,
+    C_COUNTRY.CURRENCY_ISO_CODE),
+    Q4.ISBUDGETARY,
+    Q3.COMPONENTFILEDATE, Q4.LV3_LVA, Q4.NNI_PtToPt,
+    Q4.BANDCOMMITRATEMIN, Q4.BANDCOMMITRATEMAX,
+    NVL(CTD2.PARAVALUE, 'N'),
+    NVL(CTD3.PARAVALUE, 'N'),
+    Q2.glmlocationid,
+    Q2.citynetwork,
+    Q2.postalcode,
+    Q2.capid,
+    Q2.producttype
+
+EOX
+editor:XY=320,270
+end:AMS_Detail_Data
+
+node:Hash_Split
+bretype:core::Hash Split
+editor:handle=5b60db102fbf3768
+editor:sortkey=5af352cc678e6c74
+input:@42d5a99836af7bc2/=AMS_Detail_Data.40fd2c7444283da6
+output:@42d5aa381aa13793/=
+output:@42d5a99879a10daa/=
+output:5af352db17007b14/out3=
+output:5af352de355f5ddb/out4=
+output:5af352e07d7c35c7/out5=
+output:5af352e1600c5dbf/out6=
+output:5af352e84d4f6a10/out7=
+prop:SplitFields=CXRTELCOOCN
+editor:XY=550,270
+end:Hash_Split
+
+node:Insert_AMS_DETAIL_1
+bretype:core::Composite
+editor:Label=Insert AMS_DETAIL 1
+editor:handle=5b60db107dbe1978
+editor:sortkey=5af499645bd961be
+input:5af4996468a379a6/INSERT INTO AMS_DETAIL - out1=Hash_Split.42d5aa381aa13793
+inputxy:0=160,180
+inputrotation:0=0
+editor:bend=0=780|240
+inclockxy:Inclock=110,50
+outclockxy:Outclock=230,50
+ineventxy:InEvent=20,200
+outeventxy:OutEvent=400,200
+editor:XY=890,150
+node:INSERT_INTO_AMS_DETAIL
+bretype:core::DB Execute
+editor:Label=INSERT INTO AMS_DETAIL
+editor:handle=5b60db10260c1d3a
+editor:sortkey=589034931f3c79f3_12
+input:589034fa78ca3f43/out1=^.5af4996468a379a6
+prop:CommitFrequency=10000
+prop:DbInterface={{^EMEA_DEV1_DB_INTERFACE^}}
+encrypted:simple=nFZhmIpYZmvjMtRGF8lNF8JPgXLTznUZdCHZKKmdqEwCPHXbp8rf0q5nfic=
+prop:DbService={{^EMEA_DEV1_DB_SERVICE^}}
+prop:DbUser={{^EMEA_DEV1_DB_USER^}}
+prop:Query=<<EOX
+insert into  AMS_DETAIL
+(CXRTELCOOCN,
+CXRTELCONAME,
+VENDORDATE,
+COUNTRYCODE,
+CTRYNAME,
+CURRENCYCODE,
+ISBUDGETARY,
+BUILDINGLISTDATE,
+COMPONENTFILEDATE,
+LV3_LVA,
+NNI_PTTOPT,
+BANDCOMMITRATEMIN,
+BANDCOMMITRATEMAX,
+ONNET_CITY_POSTALCODE_ONLY,
+ONNET_COUNTRY_CITY_ONLY,
+GLMLOCATIONID,
+CITYNETWORK,
+POSTALCODE,
+CAPID,
+PRODUCTTYPE,
+DATETIMESTAMP)
+values(:1,:2,:3,:4,:5,:6,:7,TO_DATE(:8,'MM/DD/YYYY'),TO_DATE(:9,'MM/DD/YYYY'),:10,:11,:12,:13,:14,:15,:16,:17,:18,:19,:20,SYSDATE)
+EOX
+prop:Script=<<EOX
+sqlNonSelect
+(
+  "{{^Query^}}",
+CXRTELCOOCN,
+CXRTELCONAME,
+VENDORDATE,
+COUNTRYCODE,
+CTRYNAME,
+CURRENCYCODE,
+ISBUDGETARY,
+BUILDINGLISTDATE,
+COMPONENTFILEDATE,
+LV3_LVA,
+NNI_PTTOPT,
+BANDCOMMITRATEMIN,
+BANDCOMMITRATEMAX,
+ONNET_CITY_POSTALCODE_ONLY,
+ONNET_COUNTRY_CITY_ONLY,
+GLMLOCATIONID,
+CITYNETWORK,
+POSTALCODE,
+CAPID, 
+PRODUCTTYPE
+)
+EOX
+editor:XY=410,180
+editor:propdef=Query|sql|1||None
+end:INSERT_INTO_AMS_DETAIL
+
+end:Insert_AMS_DETAIL_1
+
+node:Insert_AMS_DETAIL_2
+bretype:core::Composite
+editor:Label=Insert AMS_DETAIL 2
+editor:handle=5b60db106c5c7ea4
+editor:sortkey=5af499645bd961be_2
+input:5af4996468a379a6/INSERT INTO  AMS_DETAIL - out2=Hash_Split.42d5a99879a10daa
+inputxy:0=160,180
+inputrotation:0=0
+editor:bend=0=1000|250
+inclockxy:Inclock=110,50
+outclockxy:Outclock=230,50
+ineventxy:InEvent=20,200
+outeventxy:OutEvent=400,200
+editor:XY=1120,160
+node:INSERT_INTO_AMS_DETAIL
+bretype:core::DB Execute
+editor:Label=INSERT INTO AMS_DETAIL
+editor:handle=5b60db102fb56ff6
+editor:sortkey=589034931f3c79f3_12
+input:589034fa78ca3f43/out1=^.5af4996468a379a6
+prop:CommitFrequency=10000
+prop:DbInterface={{^EMEA_DEV1_DB_INTERFACE^}}
+encrypted:simple=nFZhmIpYZmvjMtRGF8lNF8JPgXLTznUZdCHZKKmdqEwCPHXbp8rf0q5nfic=
+prop:DbService={{^EMEA_DEV1_DB_SERVICE^}}
+prop:DbUser={{^EMEA_DEV1_DB_USER^}}
+prop:Query=<<EOX
+insert into  AMS_DETAIL
+(CXRTELCOOCN,
+CXRTELCONAME,
+VENDORDATE,
+COUNTRYCODE,
+CTRYNAME,
+CURRENCYCODE,
+ISBUDGETARY,
+BUILDINGLISTDATE,
+COMPONENTFILEDATE,
+LV3_LVA,
+NNI_PTTOPT,
+BANDCOMMITRATEMIN,
+BANDCOMMITRATEMAX,
+ONNET_CITY_POSTALCODE_ONLY,
+ONNET_COUNTRY_CITY_ONLY,
+GLMLOCATIONID,
+CITYNETWORK,
+POSTALCODE,
+CAPID,
+PRODUCTTYPE,
+DATETIMESTAMP)
+values(:1,:2,:3,:4,:5,:6,:7,TO_DATE(:8,'MM/DD/YYYY'),TO_DATE(:9,'MM/DD/YYYY'),:10,:11,:12,:13,:14,:15,:16,:17,:18,:19,:20, SYSDATE)
+EOX
+prop:Script=<<EOX
+sqlNonSelect
+(
+  "{{^Query^}}",
+CXRTELCOOCN,
+CXRTELCONAME,
+VENDORDATE,
+COUNTRYCODE,
+CTRYNAME,
+CURRENCYCODE,
+ISBUDGETARY,
+BUILDINGLISTDATE,
+COMPONENTFILEDATE,
+LV3_LVA,
+NNI_PTTOPT,
+BANDCOMMITRATEMIN,
+BANDCOMMITRATEMAX,
+ONNET_CITY_POSTALCODE_ONLY,
+ONNET_COUNTRY_CITY_ONLY,
+GLMLOCATIONID,
+CITYNETWORK,
+POSTALCODE,
+CAPID,
+PRODUCTTYPE
+)
+EOX
+editor:XY=410,180
+editor:propdef=Query|sql|1||None
+end:INSERT_INTO_AMS_DETAIL
+
+end:Insert_AMS_DETAIL_2
+
+node:Insert_AMS_DETAIL_4
+bretype:core::Composite
+editor:Label=Insert AMS_DETAIL 4
+editor:handle=5b60db10534421d6
+editor:sortkey=5af499645bd961be_3
+input:5af4996468a379a6/INSERT INTO  AMS_DETAIL - out4=Hash_Split.5af352de355f5ddb
+inputxy:0=160,180
+inputrotation:0=0
+inclockxy:Inclock=110,50
+outclockxy:Outclock=230,50
+ineventxy:InEvent=20,200
+outeventxy:OutEvent=400,200
+editor:XY=1560,270
+node:INSERT_INTO_AMS_DETAIL
+bretype:core::DB Execute
+editor:Label=INSERT INTO AMS_DETAIL
+editor:handle=5b60db105e9e38ff
+editor:sortkey=589034931f3c79f3_12
+input:589034fa78ca3f43/out1=^.5af4996468a379a6
+prop:CommitFrequency=10000
+prop:DbInterface={{^EMEA_DEV1_DB_INTERFACE^}}
+encrypted:simple=nFZhmIpYZmvjMtRGF8lNF8JPgXLTznUZdCHZKKmdqEwCPHXbp8rf0q5nfic=
+prop:DbService={{^EMEA_DEV1_DB_SERVICE^}}
+prop:DbUser={{^EMEA_DEV1_DB_USER^}}
+prop:Query=<<EOX
+insert into  AMS_DETAIL
+(CXRTELCOOCN,
+CXRTELCONAME,
+VENDORDATE,
+COUNTRYCODE,
+CTRYNAME,
+CURRENCYCODE,
+ISBUDGETARY,
+BUILDINGLISTDATE,
+COMPONENTFILEDATE,
+LV3_LVA,
+NNI_PTTOPT,
+BANDCOMMITRATEMIN,
+BANDCOMMITRATEMAX,
+ONNET_CITY_POSTALCODE_ONLY,
+ONNET_COUNTRY_CITY_ONLY,
+GLMLOCATIONID,
+CITYNETWORK,
+POSTALCODE,
+CAPID,
+PRODUCTTYPE,
+DATETIMESTAMP)
+values(:1,:2,:3,:4,:5,:6,:7,TO_DATE(:8,'MM/DD/YYYY'),TO_DATE(:9,'MM/DD/YYYY'),:10,:11,:12,:13,:14,:15,:16,:17,:18,:19,:20, SYSDATE)
+EOX
+prop:Script=<<EOX
+sqlNonSelect
+(
+  "{{^Query^}}",
+CXRTELCOOCN,
+CXRTELCONAME,
+VENDORDATE,
+COUNTRYCODE,
+CTRYNAME,
+CURRENCYCODE,
+ISBUDGETARY,
+BUILDINGLISTDATE,
+COMPONENTFILEDATE,
+LV3_LVA,
+NNI_PTTOPT,
+BANDCOMMITRATEMIN,
+BANDCOMMITRATEMAX,
+ONNET_CITY_POSTALCODE_ONLY,
+ONNET_COUNTRY_CITY_ONLY,
+GLMLOCATIONID,
+CITYNETWORK,
+POSTALCODE,
+CAPID, 
+PRODUCTTYPE
+)
+EOX
+editor:XY=410,180
+editor:propdef=Query|sql|1||None
+end:INSERT_INTO_AMS_DETAIL
+
+end:Insert_AMS_DETAIL_4
+
+node:Insert_AMS_DETAIL_5
+bretype:core::Composite
+editor:Label=Insert AMS_DETAIL 5
+editor:handle=5b60db10192006a3
+editor:sortkey=5af499645bd961be_4
+input:5af4996468a379a6/INSERT INTO  AMS_DETAIL - out5=Hash_Split.5af352e07d7c35c7
+inputxy:0=160,180
+inputrotation:0=0
+editor:bend=0=1210|280
+inclockxy:Inclock=110,50
+outclockxy:Outclock=230,50
+ineventxy:InEvent=20,200
+outeventxy:OutEvent=400,200
+editor:XY=1380,380
+node:INSERT_INTO_AMS_DETAIL
+bretype:core::DB Execute
+editor:Label=INSERT INTO AMS_DETAIL
+editor:handle=5b60db10415540bb
+editor:sortkey=589034931f3c79f3_12
+input:589034fa78ca3f43/out1=^.5af4996468a379a6
+prop:CommitFrequency=10000
+prop:DbInterface={{^EMEA_DEV1_DB_INTERFACE^}}
+encrypted:simple=nFZhmIpYZmvjMtRGF8lNF8JPgXLTznUZdCHZKKmdqEwCPHXbp8rf0q5nfic=
+prop:DbService={{^EMEA_DEV1_DB_SERVICE^}}
+prop:DbUser={{^EMEA_DEV1_DB_USER^}}
+prop:Query=<<EOX
+insert into  AMS_DETAIL
+(CXRTELCOOCN,
+CXRTELCONAME,
+VENDORDATE,
+COUNTRYCODE,
+CTRYNAME,
+CURRENCYCODE,
+ISBUDGETARY,
+BUILDINGLISTDATE,
+COMPONENTFILEDATE,
+LV3_LVA,
+NNI_PTTOPT,
+BANDCOMMITRATEMIN,
+BANDCOMMITRATEMAX,
+ONNET_CITY_POSTALCODE_ONLY,
+ONNET_COUNTRY_CITY_ONLY,
+GLMLOCATIONID,
+CITYNETWORK,
+POSTALCODE,
+CAPID,
+PRODUCTTYPE,
+DATETIMESTAMP)
+values(:1,:2,:3,:4,:5,:6,:7,TO_DATE(:8,'MM/DD/YYYY'),TO_DATE(:9,'MM/DD/YYYY'),:10,:11,:12,:13,:14,:15,:16,:17,:18,:19,:20, SYSDATE)
+EOX
+prop:Script=<<EOX
+sqlNonSelect
+(
+  "{{^Query^}}",
+CXRTELCOOCN,
+CXRTELCONAME,
+VENDORDATE,
+COUNTRYCODE,
+CTRYNAME,
+CURRENCYCODE,
+ISBUDGETARY,
+BUILDINGLISTDATE,
+COMPONENTFILEDATE,
+LV3_LVA,
+NNI_PTTOPT,
+BANDCOMMITRATEMIN,
+BANDCOMMITRATEMAX,
+ONNET_CITY_POSTALCODE_ONLY,
+ONNET_COUNTRY_CITY_ONLY,
+GLMLOCATIONID,
+CITYNETWORK,
+POSTALCODE,
+CAPID, 
+PRODUCTTYPE
+)
+EOX
+editor:XY=410,180
+editor:propdef=Query|sql|1||None
+end:INSERT_INTO_AMS_DETAIL
+
+end:Insert_AMS_DETAIL_5
+
+node:Insert_AMS_DETAIL_6
+bretype:core::Composite
+editor:Label=Insert AMS_DETAIL 6
+editor:handle=5b60db10488a21c9
+editor:sortkey=5af499645bd961be_5
+input:5af4996468a379a6/INSERT INTO  AMS_DETAIL - out6=Hash_Split.5af352e1600c5dbf
+inputxy:0=160,180
+inputrotation:0=0
+editor:bend=0=1000|290
+inclockxy:Inclock=110,50
+outclockxy:Outclock=230,50
+ineventxy:InEvent=20,200
+outeventxy:OutEvent=400,200
+editor:XY=1140,390
+node:INSERT_INTO_AMS_DETAIL
+bretype:core::DB Execute
+editor:Label=INSERT INTO AMS_DETAIL
+editor:handle=5b60db107bf553e9
+editor:sortkey=589034931f3c79f3_12
+input:589034fa78ca3f43/out1=^.5af4996468a379a6
+prop:CommitFrequency=10000
+prop:DbInterface={{^EMEA_DEV1_DB_INTERFACE^}}
+encrypted:simple=nFZhmIpYZmvjMtRGF8lNF8JPgXLTznUZdCHZKKmdqEwCPHXbp8rf0q5nfic=
+prop:DbService={{^EMEA_DEV1_DB_SERVICE^}}
+prop:DbUser={{^EMEA_DEV1_DB_USER^}}
+prop:Query=<<EOX
+insert into  AMS_DETAIL
+(CXRTELCOOCN,
+CXRTELCONAME,
+VENDORDATE,
+COUNTRYCODE,
+CTRYNAME,
+CURRENCYCODE,
+ISBUDGETARY,
+BUILDINGLISTDATE,
+COMPONENTFILEDATE,
+LV3_LVA,
+NNI_PTTOPT,
+BANDCOMMITRATEMIN,
+BANDCOMMITRATEMAX,
+ONNET_CITY_POSTALCODE_ONLY,
+ONNET_COUNTRY_CITY_ONLY,
+GLMLOCATIONID,
+CITYNETWORK,
+POSTALCODE,
+CAPID,
+PRODUCTTYPE,
+DATETIMESTAMP)
+values(:1,:2,:3,:4,:5,:6,:7,TO_DATE(:8,'MM/DD/YYYY'),TO_DATE(:9,'MM/DD/YYYY'),:10,:11,:12,:13,:14,:15,:16,:17,:18,:19,:20, SYSDATE)
+EOX
+prop:Script=<<EOX
+sqlNonSelect
+(
+  "{{^Query^}}",
+CXRTELCOOCN,
+CXRTELCONAME,
+VENDORDATE,
+COUNTRYCODE,
+CTRYNAME,
+CURRENCYCODE,
+ISBUDGETARY,
+BUILDINGLISTDATE,
+COMPONENTFILEDATE,
+LV3_LVA,
+NNI_PTTOPT,
+BANDCOMMITRATEMIN,
+BANDCOMMITRATEMAX,
+ONNET_CITY_POSTALCODE_ONLY,
+ONNET_COUNTRY_CITY_ONLY,
+GLMLOCATIONID,
+CITYNETWORK,
+POSTALCODE,
+CAPID, 
+PRODUCTTYPE
+)
+EOX
+editor:XY=410,180
+editor:propdef=Query|sql|1||None
+end:INSERT_INTO_AMS_DETAIL
+
+end:Insert_AMS_DETAIL_6
+
+node:Insert_AMS_DETAIL_7
+bretype:core::Composite
+editor:Label=Insert AMS_DETAIL 7
+editor:handle=5b60db101017691d
+editor:sortkey=5af499645bd961be_6
+input:5af4996468a379a6/INSERT INTO  AMS_DETAIL - out7=Hash_Split.5af352e84d4f6a10
+inputxy:0=160,180
+inputrotation:0=0
+editor:bend=0=770|300
+inclockxy:Inclock=110,50
+outclockxy:Outclock=230,50
+ineventxy:InEvent=20,200
+outeventxy:OutEvent=400,200
+editor:XY=910,380
+node:INSERT_INTO_AMS_DETAIL
+bretype:core::DB Execute
+editor:Label=INSERT INTO AMS_DETAIL
+editor:handle=5b60db10684a7335
+editor:sortkey=589034931f3c79f3_12
+input:589034fa78ca3f43/out1=^.5af4996468a379a6
+prop:CommitFrequency=10000
+prop:DbInterface={{^EMEA_DEV1_DB_INTERFACE^}}
+encrypted:simple=nFZhmIpYZmvjMtRGF8lNF8JPgXLTznUZdCHZKKmdqEwCPHXbp8rf0q5nfic=
+prop:DbService={{^EMEA_DEV1_DB_SERVICE^}}
+prop:DbUser={{^EMEA_DEV1_DB_USER^}}
+prop:Query=<<EOX
+insert into  AMS_DETAIL
+(CXRTELCOOCN,
+CXRTELCONAME,
+VENDORDATE,
+COUNTRYCODE,
+CTRYNAME,
+CURRENCYCODE,
+ISBUDGETARY,
+BUILDINGLISTDATE,
+COMPONENTFILEDATE,
+LV3_LVA,
+NNI_PTTOPT,
+BANDCOMMITRATEMIN,
+BANDCOMMITRATEMAX,
+ONNET_CITY_POSTALCODE_ONLY,
+ONNET_COUNTRY_CITY_ONLY,
+GLMLOCATIONID,
+CITYNETWORK,
+POSTALCODE,
+CAPID,
+PRODUCTTYPE,
+DATETIMESTAMP)
+values(:1,:2,:3,:4,:5,:6,:7,TO_DATE(:8,'MM/DD/YYYY'),TO_DATE(:9,'MM/DD/YYYY'),:10,:11,:12,:13,:14,:15,:16,:17,:18,:19,:20, SYSDATE)
+EOX
+prop:Script=<<EOX
+sqlNonSelect
+(
+  "{{^Query^}}",
+CXRTELCOOCN,
+CXRTELCONAME,
+VENDORDATE,
+COUNTRYCODE,
+CTRYNAME,
+CURRENCYCODE,
+ISBUDGETARY,
+BUILDINGLISTDATE,
+COMPONENTFILEDATE,
+LV3_LVA,
+NNI_PTTOPT,
+BANDCOMMITRATEMIN,
+BANDCOMMITRATEMAX,
+ONNET_CITY_POSTALCODE_ONLY,
+ONNET_COUNTRY_CITY_ONLY,
+GLMLOCATIONID,
+CITYNETWORK,
+POSTALCODE,
+CAPID,
+PRODUCTTYPE
+)
+EOX
+editor:XY=410,180
+editor:propdef=Query|sql|1||None
+end:INSERT_INTO_AMS_DETAIL
+
+end:Insert_AMS_DETAIL_7
+
+node:Insert_AMS_DETAIL_3
+bretype:core::Composite
+editor:Label=Insert AMS_DETAIL 3
+editor:handle=5b60db1003941fc5
+editor:sortkey=5af499645bd961be_8
+input:5af4996468a379a6/INSERT INTO  AMS_DETAIL - out3=Hash_Split.5af352db17007b14
+inputxy:0=160,180
+inputrotation:0=0
+editor:bend=0=1220|260
+inclockxy:Inclock=110,50
+outclockxy:Outclock=230,50
+ineventxy:InEvent=20,200
+outeventxy:OutEvent=400,200
+editor:XY=1360,160
+node:INSERT_INTO_AMS_DETAIL
+bretype:core::DB Execute
+editor:Label=INSERT INTO AMS_DETAIL
+editor:handle=5b60db1001352109
+editor:sortkey=589034931f3c79f3_12
+input:589034fa78ca3f43/out1=^.5af4996468a379a6
+prop:CommitFrequency=10000
+prop:DbInterface={{^EMEA_DEV1_DB_INTERFACE^}}
+encrypted:simple=nFZhmIpYZmvjMtRGF8lNF8JPgXLTznUZdCHZKKmdqEwCPHXbp8rf0q5nfic=
+prop:DbService={{^EMEA_DEV1_DB_SERVICE^}}
+prop:DbUser={{^EMEA_DEV1_DB_USER^}}
+prop:Query=<<EOX
+insert into  AMS_DETAIL
+(CXRTELCOOCN,
+CXRTELCONAME,
+VENDORDATE,
+COUNTRYCODE,
+CTRYNAME,
+CURRENCYCODE,
+ISBUDGETARY,
+BUILDINGLISTDATE,
+COMPONENTFILEDATE,
+LV3_LVA,
+NNI_PTTOPT,
+BANDCOMMITRATEMIN,
+BANDCOMMITRATEMAX,
+ONNET_CITY_POSTALCODE_ONLY,
+ONNET_COUNTRY_CITY_ONLY,
+GLMLOCATIONID,
+CITYNETWORK,
+POSTALCODE,
+CAPID,
+PRODUCTTYPE,
+DATETIMESTAMP)
+values(:1,:2,:3,:4,:5,:6,:7,TO_DATE(:8,'MM/DD/YYYY'),TO_DATE(:9,'MM/DD/YYYY'),:10,:11,:12,:13,:14,:15,:16,:17,:18,:19,:20,SYSDATE)
+EOX
+prop:Script=<<EOX
+sqlNonSelect
+(
+  "{{^Query^}}",
+CXRTELCOOCN,
+CXRTELCONAME,
+VENDORDATE,
+COUNTRYCODE,
+CTRYNAME,
+CURRENCYCODE,
+ISBUDGETARY,
+BUILDINGLISTDATE,
+COMPONENTFILEDATE,
+LV3_LVA,
+NNI_PTTOPT,
+BANDCOMMITRATEMIN,
+BANDCOMMITRATEMAX,
+ONNET_CITY_POSTALCODE_ONLY,
+ONNET_COUNTRY_CITY_ONLY,
+GLMLOCATIONID,
+CITYNETWORK,
+POSTALCODE,
+CAPID, 
+PRODUCTTYPE
+)
+EOX
+editor:XY=410,180
+editor:propdef=Query|sql|1||None
+end:INSERT_INTO_AMS_DETAIL
+
+end:Insert_AMS_DETAIL_3
+
+end:AMS_Detail2
+
+node:AMS_Component
+bretype:core::Composite
+editor:Label=AMS Component
+editor:handle=5c50c2e2482d69b1
+editor:sortkey=5ade0c0459075ac6_3
+inclock:/=IFO
+inclockxy:Inclock=110,50
+outclockxy:Outclock=230,50
+ineventxy:InEvent=20,200
+outeventxy:OutEvent=400,200
+editor:XY=990,350
+node:L_INTL_COMPONENT
+bretype:core::DB Truncate
+editor:Label=L_INTL_COMPONENT
+editor:handle=5c51caed6b0e2ab4
+editor:sortkey=586b77c00cf574f4_4
+prop:CleanResults=ALL
+prop:DbInterface={{^EMEA_DEV1_DB_INTERFACE^}}
+encrypted:simple=nFZhmIpYZmvjMtRGF8lNF8JPgXLTznUZdCHZKKmdqEwCPHXbp8rf0q5nfic=
+prop:DbService={{^EMEA_DEV1_DB_SERVICE^}}
+prop:DbUser={{^EMEA_DEV1_DB_USER^}}
+prop:Script=<<EOX
+resultValue = "{{^CleanResults^}}".trim().toUpper().switch(
+	"NONE", false,
+	"ALL", sqlNonSelect("truncate table {{^Table^}}"),
+	"TODAY", sqlNonSelect("delete from {{^Table^}} where to_char({{^DateColumn=DATE_COLUMN_NOT_SET^}}, 'YYYYMMDD') = to_char(SYSDATE,'YYYYMMDD') "),
+	sqlNonSelect("delete from {{^Table^}} where {{^DateColumn=DATE_COLUMN_NOT_SET^}} = TO_DATE('{{^CleanResults^}}','YYYY-MM-DD') ")
+)
+	
+EOX
+prop:Table=L_INTL_COMPONENT
+editor:XY=180,270
+end:L_INTL_COMPONENT
+
+node:INSERT_INTO_L_INTL_COMPONENT
+bretype:core::DB Execute
+editor:Label=INSERT INTO L_INTL_COMPONENT
+editor:handle=5c50c68a5d6d30ab
+editor:sortkey=589034931f3c79f3_12
+input:589034fa78ca3f43/out1=AMS_Component_Data.40fd2c7444283da6
+prop:CommitFrequency=10000
+prop:DbInterface={{^EMEA_DEV1_DB_INTERFACE^}}
+encrypted:simple=nFZhmIpYZmvjMtRGF8lNF8JPgXLTznUZdCHZKKmdqEwCPHXbp8rf0q5nfic=
+prop:DbService={{^EMEA_DEV1_DB_SERVICE^}}
+prop:DbUser={{^EMEA_DEV1_DB_USER^}}
+prop:Query=<<EOX
+insert into  L_INTL_COMPONENT
+(
+VENDORCODE,
+VENDORNAME,
+COUNTRYCODE,
+CTRYNAME,
+CURRENCYCODE,
+NNI_PTTOPT,
+NETWORK,
+ZONEAREA,
+BANDCOMMITRATEMIN,
+BANDCOMMITRATEMAX,
+MRC,
+NRC,
+PORTSPEED,
+PRODUCTTYPE,
+SPECIALCASE,
+TERM
+)
+values(:1,:2,:3,:4,:5,:6,:7,:8,:9,:10,:11,:12,:13,:14, :15, :16)
+EOX
+prop:Script=<<EOX
+sqlNonSelect
+(
+  "{{^Query^}}",
+VENDORCODE,
+VENDORNAME,
+COUNTRYCODE,
+CTRYNAME,
+CURRENCYCODE,
+NNI_PTTOPT,
+NETWORK,
+ZONEAREA,
+BANDCOMMITRATEMIN,
+BANDCOMMITRATEMAX,
+MRC,
+NRC,
+PORTSPEED,
+PRODUCTTYPE,
+SPECIALCASE,
+TERM
+)
+EOX
+editor:XY=490,270
+editor:propdef=Query|sql|1||None
+end:INSERT_INTO_L_INTL_COMPONENT
+
+node:AMS_Component_Data
+bretype:core::DB Query
+editor:Label=AMS Component Data
+editor:handle=5c50c2e26f8d78e5
+editor:sortkey=5ad0dc971c64651c_3
+output:@40fd2c7444283da6/=
+inclock:/=L_L_INTL_CAPBUILDING
+inclock:/=L_INTL_COMPONENT
+prop:DbInterface={{^AMS_DB_INTERFACE^}}
+encrypted:simple=nFZhmIpYZmvjMtRGF8lNF8JPgXbT2GsCcjvfWKWKvVwAOXj1jY8=
+prop:DbService={{^AMS_DB_SERVICE^}}
+prop:DbUser={{^AMS_DB_USER^}}
+prop:SqlQuery=<<EOX
+SELECT distinct ctc.CXRTELCOOCN VendorCode
+     , ctc.CXRTELCONAME VendorName
+     , Q2.COUNTRYCODE
+     , c.CTRYNAME
+     , NVL(ctcd.PARAVALUE, C.CURRENCY_ISO_CODE) AS CURRENCYCODE
+     , Q4.NNI_PtToPt
+	 , Q4.LV3_LVA Network
+	 , Q4.ZONEAREA
+     , Q4.BANDCOMMITRATEMIN
+     , Q4.BANDCOMMITRATEMAX
+     , Q4.MRC
+	 , Q4.NRC
+	 , Q4.PortSpeed
+     , Q2.producttype
+     ,q2.specialcase
+      ,Q4.term
+
+  FROM NDATARIFFS.C_CARRIERTELCO ctc
+       join NDATARIFFS.C_COUNTRY c
+         on ctc.CTRYCODE = C.CTRYCODE
+       left join NDATARIFFS.C_CARRIERTELCO_DETAIL ctcd
+         on ctc.CXRTELCOOCN = ctcd.CXRTELCOOCN
+            AND ctcd.PARANAME  = 'Vendor Currency Code'
+       left join (SELECT distinct  VENDOROCN, countrycode, producttype, specialcase
+                    FROM NDATARIFFS.L_INTL_CAPBUILDING) Q2
+         on Q2.VENDOROCN = ctc.CXRTELCOOCN
+       left join (SELECT distinct carrier,
+                         bridgingtype AS LV3_LVA,
+                         linktype AS NNI_PtToPt,
+                         CASE UPPER(BANDUNIT) WHEN 'GB' THEN  BANDCOMMITRATEMIN * 1000 ELSE BANDCOMMITRATEMIN   END AS BANDCOMMITRATEMIN,
+                         CASE UPPER(BANDUNIT) WHEN 'GB' THEN BANDCOMMITRATEMAX * 1000 ELSE BANDCOMMITRATEMAX   END AS BANDCOMMITRATEMAX,
+                         MONTHLYCHARGE as MRC,
+				         NONRCURCHARGE as NRC,
+				         PORTSPEED as PortSpeed,
+				         zonearea as zonearea,
+				         termcommitment as term
+                    FROM NDATARIFFS.C_CMPTCHARGEID ccd
+                         join NDATARIFFS.L_INTL_COMPONENT ic
+                           on CCD.componentid = IC.componentid) Q4
+         on ctc.CXRTELCOOCN = Q4.CARRIER
+WHERE ctc.CXRTELCOALPHACD = 'LVLC'
+  AND ctc.CATEGORY = 'INTL'
+  order by 3, 2
+EOX
+editor:XY=330,270
+end:AMS_Component_Data
+
+end:AMS_Component
+
+node:GLM
+bretype:core::Composite
+editor:Label=GLM
+editor:handle=5ade0c7325925d86
+editor:sortkey=5ade0c7325925d86
+inclock:/=IFO
+inclockxy:Inclock=110,50
+outclockxy:Outclock=230,50
+ineventxy:InEvent=20,200
+outeventxy:OutEvent=400,200
+editor:XY=580,70
+node:L_GLM_SITE
+bretype:core::DB Truncate
+editor:Label=L_GLM_SITE
+editor:handle=5ad7ab977a2f7bba
+editor:sortkey=586b77c00cf574f4_2
+prop:CleanResults=ALL
+prop:DbInterface={{^EMEA_DEV1_DB_INTERFACE^}}
+encrypted:simple=nFZhmIpYZmvjMtRGF8lNF8JPgXLTznUZdCHZKKmdqEwCPHXbp8rf0q5nfic=
+prop:DbService={{^EMEA_DEV1_DB_SERVICE^}}
+prop:DbUser={{^EMEA_DEV1_DB_USER^}}
+prop:Script=<<EOX
+resultValue = "{{^CleanResults^}}".trim().toUpper().switch(
+	"NONE", false,
+	"ALL", sqlNonSelect("truncate table {{^Table^}}"),
+	"TODAY", sqlNonSelect("delete from {{^Table^}} where to_char({{^DateColumn=DATE_COLUMN_NOT_SET^}}, 'YYYYMMDD') = to_char(SYSDATE,'YYYYMMDD') "),
+	sqlNonSelect("delete from {{^Table^}} where {{^DateColumn=DATE_COLUMN_NOT_SET^}} = TO_DATE('{{^CleanResults^}}','YYYY-MM-DD') ")
+)
+	
+EOX
+prop:Table=L_GLM_SITE
+editor:XY=160,350
+end:L_GLM_SITE
+
+node:INSERT_INTO_L_GLM_SITE_1
+bretype:core::DB Execute
+editor:Label=INSERT INTO L_GLM_SITE 1
+editor:handle=5af5aa5f0b6c5c9d
+editor:sortkey=589034931f3c79f3
+input:589034fa78ca3f43/out1=Hash_Split.42d5aa381aa13793
+editor:bend=0=920|320
+prop:CommitFrequency=10000
+prop:DbInterface={{^EMEA_DEV1_DB_INTERFACE^}}
+encrypted:simple=nFZhmIpYZmvjMtRGF8lNF8JPgXLTznUZdCHZKKmdqEwCPHXbp8rf0q5nfic=
+prop:DbService={{^EMEA_DEV1_DB_SERVICE^}}
+prop:DbUser={{^EMEA_DEV1_DB_USER^}}
+prop:Query=<<EOX
+insert into  L_GLM_SITE
+(
+site_ID, 
+Is_ON_NET,
+address_source,
+name,
+created_by,
+city,
+postal_code, 
+country_code,
+date_added,
+building_name,
+street_number,
+street_name,
+STREET_NAME_SUFFIX,
+ADDRESS_LINE1,
+state,
+CREATE_DATETIME
+)
+values(:1,:2,:3,:4,:5,:6,:7,:8,:9,:10,:11,:12,:13,:14,:15, SYSDATE)
+EOX
+prop:Script=<<EOX
+sqlNonSelect
+(
+  "{{^Query^}}",
+  
+site_ID, 
+Is_ON_NET,
+address_source,
+name,
+created_by,
+city,
+postal_code,
+country_code,
+date_added,
+building_name,
+street_number,
+street_name,
+STREET_NAME_SUFFIX,
+ADDRESS_LINE1,
+state
+)
+EOX
+editor:XY=950,110
+editor:propdef=Query|sql|1||None
+end:INSERT_INTO_L_GLM_SITE_1
+
+node:INSERT_INTO_L_GLM_SITE_5_2
+bretype:core::DB Execute
+editor:Label=INSERT INTO L_GLM_SITE 5
+editor:handle=5af5aa9a264f1494
+editor:sortkey=589034931f3c79f3_3
+input:589034fa78ca3f43/out5=Hash_Split.5af352e07d7c35c7
+editor:bend=0=1350|360
+prop:CommitFrequency=10000
+prop:DbInterface={{^EMEA_DEV1_DB_INTERFACE^}}
+encrypted:simple=nFZhmIpYZmvjMtRGF8lNF8JPgXLTznUZdCHZKKmdqEwCPHXbp8rf0q5nfic=
+prop:DbService={{^EMEA_DEV1_DB_SERVICE^}}
+prop:DbUser={{^EMEA_DEV1_DB_USER^}}
+prop:Query=<<EOX
+insert into  L_GLM_SITE
+(
+site_ID, 
+Is_ON_NET,
+address_source,
+name,
+created_by,
+city,
+postal_code,
+country_code,
+date_added,
+building_name,
+street_number,
+street_name,
+STREET_NAME_SUFFIX,
+address_line1,
+state,
+CREATE_DATETIME
+)
+values(:1,:2,:3,:4,:5,:6,:7,:8,:9,:10,:11,:12,:13, :14,:15, SYSDATE)
+EOX
+prop:Script=<<EOX
+sqlNonSelect
+(
+  "{{^Query^}}",
+  
+site_ID, 
+Is_ON_NET,
+address_source,
+name,
+created_by,
+city,
+postal_code,
+country_code,
+date_added,
+building_name,
+street_number,
+street_name,
+STREET_NAME_SUFFIX,
+address_line1,
+state
+)
+EOX
+editor:XY=1380,430
+editor:propdef=Query|sql|1||None
+end:INSERT_INTO_L_GLM_SITE_5_2
+
+node:INSERT_INTO_L_GLM_SITE_7_2
+bretype:core::DB Execute
+editor:Label=INSERT INTO L_GLM_SITE 7
+editor:handle=5af5aa9b1e252104
+editor:sortkey=589034931f3c79f3_4
+input:589034fa78ca3f43/out7=Hash_Split.5af352e84d4f6a10
+editor:bend=0=920|380
+prop:CommitFrequency=10000
+prop:DbInterface={{^EMEA_DEV1_DB_INTERFACE^}}
+encrypted:simple=nFZhmIpYZmvjMtRGF8lNF8JPgXLTznUZdCHZKKmdqEwCPHXbp8rf0q5nfic=
+prop:DbService={{^EMEA_DEV1_DB_SERVICE^}}
+prop:DbUser={{^EMEA_DEV1_DB_USER^}}
+prop:Query=<<EOX
+insert into  L_GLM_SITE
+(
+site_ID, 
+Is_ON_NET,
+address_source,
+name,
+created_by,
+city,
+postal_code,
+country_code,
+date_added,
+building_name,
+street_number,
+street_name,
+STREET_NAME_SUFFIX,
+address_line1,
+state,
+CREATE_DATETIME
+)
+values(:1,:2,:3,:4,:5,:6,:7,:8,:9,:10,:11,:12,:13, :14, :15, SYSDATE)
+EOX
+prop:Script=<<EOX
+sqlNonSelect
+(
+  "{{^Query^}}",
+  
+site_ID, 
+Is_ON_NET,
+address_source,
+name,
+created_by,
+city,
+postal_code,
+country_code,
+date_added,
+building_name,
+street_number,
+street_name,
+STREET_NAME_SUFFIX,
+address_line1,
+state
+)
+EOX
+editor:XY=950,420
+editor:propdef=Query|sql|1||None
+end:INSERT_INTO_L_GLM_SITE_7_2
+
+node:INSERT_INTO_L_GLM_SITE_6
+bretype:core::DB Execute
+editor:Label=INSERT INTO L_GLM_SITE 6
+editor:handle=5af5aa9c23a27c49
+editor:sortkey=589034931f3c79f3_5
+input:589034fa78ca3f43/out6=Hash_Split.5af352e1600c5dbf
+editor:bend=0=1150|370
+prop:CommitFrequency=10000
+prop:DbInterface={{^EMEA_DEV1_DB_INTERFACE^}}
+encrypted:simple=nFZhmIpYZmvjMtRGF8lNF8JPgXLTznUZdCHZKKmdqEwCPHXbp8rf0q5nfic=
+prop:DbService={{^EMEA_DEV1_DB_SERVICE^}}
+prop:DbUser={{^EMEA_DEV1_DB_USER^}}
+prop:Query=<<EOX
+insert into  L_GLM_SITE
+(
+site_ID, 
+Is_ON_NET,
+address_source,
+name,
+created_by,
+city,
+postal_code,
+country_code,
+date_added,
+building_name,
+street_number,
+street_name,
+STREET_NAME_SUFFIX,
+address_line1,
+state,
+CREATE_DATETIME
+)
+values(:1,:2,:3,:4,:5,:6,:7,:8,:9,:10,:11,:12,:13, :14,:15, SYSDATE)
+EOX
+prop:Script=<<EOX
+sqlNonSelect
+(
+  "{{^Query^}}",
+  
+site_ID, 
+Is_ON_NET,
+address_source,
+name,
+created_by,
+city,
+postal_code,
+country_code,
+date_added,
+building_name,
+street_number,
+street_name,
+STREET_NAME_SUFFIX,
+address_line1, 
+state
+)
+EOX
+editor:XY=1180,430
+editor:propdef=Query|sql|1||None
+end:INSERT_INTO_L_GLM_SITE_6
+
+node:INSERT_INTO_L_GLM_SITE_4
+bretype:core::DB Execute
+editor:Label=INSERT INTO L_GLM_SITE 4
+editor:handle=5af5aa9c0a452c2d
+editor:sortkey=589034931f3c79f3_6
+input:589034fa78ca3f43/out4=Hash_Split.5af352de355f5ddb
+prop:CommitFrequency=10000
+prop:DbInterface={{^EMEA_DEV1_DB_INTERFACE^}}
+encrypted:simple=nFZhmIpYZmvjMtRGF8lNF8JPgXLTznUZdCHZKKmdqEwCPHXbp8rf0q5nfic=
+prop:DbService={{^EMEA_DEV1_DB_SERVICE^}}
+prop:DbUser={{^EMEA_DEV1_DB_USER^}}
+prop:Query=<<EOX
+insert into  L_GLM_SITE
+(
+site_ID, 
+Is_ON_NET,
+address_source,
+name,
+created_by,
+city,
+postal_code,
+country_code,
+date_added,
+building_name,
+street_number,
+street_name,
+STREET_NAME_SUFFIX,
+address_line1,
+state,
+CREATE_DATETIME
+)
+values(:1,:2,:3,:4,:5,:6,:7,:8,:9,:10,:11,:12,:13, :14,:15, SYSDATE)
+EOX
+prop:Script=<<EOX
+sqlNonSelect
+(
+  "{{^Query^}}",
+  
+site_ID, 
+Is_ON_NET,
+address_source,
+name,
+created_by,
+city, 
+postal_code,
+country_code,
+date_added,
+building_name,
+street_number,
+street_name,
+STREET_NAME_SUFFIX,
+address_line1,
+state
+)
+EOX
+editor:XY=1570,350
+editor:propdef=Query|sql|1||None
+end:INSERT_INTO_L_GLM_SITE_4
+
+node:INSERT_INTO_L_GLM_SITE_3
+bretype:core::DB Execute
+editor:Label=INSERT INTO L_GLM_SITE 3
+editor:handle=5af5aa9d67ce020c
+editor:sortkey=589034931f3c79f3_7
+input:589034fa78ca3f43/out3=Hash_Split.5af352db17007b14
+editor:bend=0=1350|340
+prop:CommitFrequency=10000
+prop:DbInterface={{^EMEA_DEV1_DB_INTERFACE^}}
+encrypted:simple=nFZhmIpYZmvjMtRGF8lNF8JPgXLTznUZdCHZKKmdqEwCPHXbp8rf0q5nfic=
+prop:DbService={{^EMEA_DEV1_DB_SERVICE^}}
+prop:DbUser={{^EMEA_DEV1_DB_USER^}}
+prop:Query=<<EOX
+insert into  L_GLM_SITE
+(
+site_ID, 
+Is_ON_NET,
+address_source,
+name,
+created_by,
+city,
+postal_code,
+country_code,
+date_added,
+building_name,
+street_number,
+street_name,
+STREET_NAME_SUFFIX,
+address_line1,
+state,
+CREATE_DATETIME
+
+)
+values(:1,:2,:3,:4,:5,:6,:7,:8,:9,:10, :11,:12,:13, :14,:15, SYSDATE)
+EOX
+prop:Script=<<EOX
+sqlNonSelect
+(
+  "{{^Query^}}",
+  
+site_ID, 
+Is_ON_NET,
+address_source,
+name,
+created_by,
+city,
+postal_code,
+country_code,
+date_added,
+building_name,
+street_number,
+street_name,
+STREET_NAME_SUFFIX,
+address_line1,
+state
+)
+EOX
+editor:XY=1380,110
+editor:propdef=Query|sql|1||None
+end:INSERT_INTO_L_GLM_SITE_3
+
+node:INSERT_INTO_L_GLM_SITE_2
+bretype:core::DB Execute
+editor:Label=INSERT INTO L_GLM_SITE 2
+editor:handle=5af5aa9e786000e7
+editor:sortkey=589034931f3c79f3_8
+input:589034fa78ca3f43/out2=Hash_Split.42d5a99879a10daa
+editor:bend=0=1150|330
+prop:CommitFrequency=10000
+prop:DbInterface={{^EMEA_DEV1_DB_INTERFACE^}}
+encrypted:simple=nFZhmIpYZmvjMtRGF8lNF8JPgXLTznUZdCHZKKmdqEwCPHXbp8rf0q5nfic=
+prop:DbService={{^EMEA_DEV1_DB_SERVICE^}}
+prop:DbUser={{^EMEA_DEV1_DB_USER^}}
+prop:Query=<<EOX
+insert into  L_GLM_SITE
+(
+site_ID, 
+Is_ON_NET,
+address_source,
+name,
+created_by,
+city,
+postal_code,
+country_code,
+date_added,
+building_name,
+street_number,
+street_name,
+STREET_NAME_SUFFIX,
+address_line1,
+state,
+CREATE_DATETIME
+)
+values(:1,:2,:3,:4,:5,:6,:7,:8,:9,:10,:11,:12,:13, :14,:15, SYSDATE)
+EOX
+prop:Script=<<EOX
+sqlNonSelect
+(
+  "{{^Query^}}",
+  
+site_ID, 
+Is_ON_NET,
+address_source,
+name,
+created_by,
+city,
+postal_code,
+country_code,
+date_added,
+building_name,
+street_number,
+street_name,
+STREET_NAME_SUFFIX,
+address_line1,
+state
+)
+EOX
+editor:XY=1180,110
+editor:propdef=Query|sql|1||None
+end:INSERT_INTO_L_GLM_SITE_2
+
+node:GLM_GLM_STAGESITE
+bretype:core::DB Query
+editor:Label=GLM GLM_STAGE.SITE
+editor:handle=5ad7ae6623d53469
+editor:sortkey=5ad0dc971c64651c
+output:@40fd2c7444283da6/=
+inclock:/=L_GLM_SITE
+prop:DbInterface={{^GLM_DB_INTERFACE^}}
+encrypted:simple=nFZhmIpYZmvjMtRGF8lNF8JPgXDSxmsCcjvfWKWKvVwAOXj1jY8=
+prop:DbService={{^GLM_DB_SERVICE^}}
+prop:DbUser={{^GLM_DB_USER^}}
+prop:SqlQuery=<<EOX
+SELECT   s.site_id,
+	s.is_on_Net,
+	addrsref.address_source,
+	addrsref.name ,
+	adrs.created_by_id  created_by,
+	adrs.city_int city,
+	adrs.postal_code,
+	adrs.country_code,
+	adrs.date_added,
+	adrs.building_name building_name,
+	adrs.street_number street_number,
+	adrs.street_name_int street_name,
+	adrs.street_name_suffix,
+	adrs.ADDRESS_LINE1,
+	adrs.state
+    FROM glm_stage.address adrs, glm_stage.site_address_xref sax, glm_stage.site s, glm_stage.Address_source  addrs, glm_stage.ref_address_source addrsref, glm_stage.ref_country_code ref
+   WHERE sax.address_id = adrs.address_id
+   AND sax.site_id = s.site_id
+   and addrs.address_id = adrs.address_id
+   and addrsref.address_source = addrs.address_source
+   and adrs.country_code = ref.country_code
+and (Is_ON_NET  in ( 'N'))
+and sax.address_type = 'PR'
+and adrs.IS_ACTIVE='Y'
+and s.is_active = 'Y'
+and ref.global_region in (
+'EMEA',
+'APAC',
+'LATAM'
+)
+order by site_ID
+EOX
+editor:XY=370,350
+end:GLM_GLM_STAGESITE
+
+node:Hash_Split
+bretype:core::Hash Split
+editor:handle=5af5a9c5189f3486
+editor:sortkey=5af352cc678e6c74
+input:@42d5a99836af7bc2/=GLM_GLM_STAGESITE.40fd2c7444283da6
+output:@42d5aa381aa13793/=
+output:@42d5a99879a10daa/=
+output:5af352db17007b14/out3=
+output:5af352de355f5ddb/out4=
+output:5af352e07d7c35c7/out5=
+output:5af352e1600c5dbf/out6=
+output:5af352e84d4f6a10/out7=
+prop:SplitFields=SITE_ID
+editor:XY=580,350
+end:Hash_Split
+
+end:GLM
+
+box:
+label:Scenario Manager Extraction
+rect:400,520,260,30
+backgroundcolor:13434879
+end:
+box:
+label:IFO Extraction
+rect:110,340,170,30
+backgroundcolor:13434879
+end:
+box:
+label:AMS Extraction
+rect:700,250,160,30
+backgroundcolor:13434879
+end:
+box:
+label:GLM Extraction
+rect:480,140,170,30
+backgroundcolor:13434879
+end:
+box:
+label:AMS Detail Extraction
+rect:720,530,230,30
+backgroundcolor:13434879
+end:
+box:
+label:AMS Component Extraction
+rect:920,400,280,30
+backgroundcolor:13434879
+end:
+end:Stage_Data_from_IFO__AMS__SM__GLM
+
+node:IFO_Quotable_Data
+bretype:core::Composite
+editor:Label=IFO Quotable Data
+editor:handle=5dfbe5fe19b412cb
+editor:sortkey=5dfbe5fe19b412cb
+inclock:/=Stage_Data_from_IFO__AMS__SM__GLM
+inclockxy:Inclock=150,160
+outclocklink:/=INSERT_INTO_IFO_FALLOUT_ARCHIVE
+outclockxy:Outclock=690,160
+ineventxy:InEvent=20,200
+outeventxy:OutEvent=400,200
+editor:XY=460,170
+node:INSERT_INTO_IFO_FALLOUT_ARCHIVE
+bretype:core::DB Execute
+editor:Label=INSERT INTO IFO_FALLOUT_ARCHIVE
+editor:handle=5c780abb22465615
+editor:sortkey=589034931f3c79f3_12
+input:589034fa78ca3f43/out1=IFO_Quotable_Fallout.40fd2c7444283da6
+prop:CommitFrequency=10000
+prop:DbInterface={{^EMEA_DEV1_DB_INTERFACE^}}
+encrypted:simple=nFZhmIpYZmvjMtRGF8lNF8JPgXLTznUZdCHZKKmdqEwCPHXbp8rf0q5nfic=
+prop:DbService={{^EMEA_DEV1_DB_SERVICE^}}
+prop:DbUser={{^EMEA_DEV1_DB_USER^}}
+prop:Query=<<EOX
+insert into IFO_FALLOUT_ARCHIVE
+(
+REASON_CODE,
+SUB_REASON_CODE,
+QUOTING_SYSTEM,
+MONTH_NAME,
+QUOTE_NUMBER,
+QUOTE_DATE,
+QUOTE_SOURCE,
+ENTITY_LINE_ITEM_ID,
+TRACKING_NUMBER,
+AMS_QUOTABLE,
+IS_UNIQUE,
+PRICING_TYPE,
+MRC,
+NRC,
+PRICETERMID,
+CURRENCYCODE,
+SOLUTION_ID,
+ROC_STATUS,
+GLM_ID,
+GLM_VALIDATION,
+GLM_ADDRESS_CREATED_BY,
+ADDR1,
+ADDR2,
+CITY,
+POST_CODE,
+COUNTRY_CODE,
+COUNTRY,
+REGION,
+BUDGETARY,
+DIVERSITY,
+CROSS_CONNECT,
+PRODUCT,
+LINE_ITEM_PRODUCT,
+BANDWIDTH,
+SUB_BANDWIDTH,
+DESCRIPTION,
+ENTITYTYPEID,
+VENDOR,
+PRODUCTTYPE,
+CONTROLLING_NETWORK,
+SI_COMMENTS,
+SI_DIVERSITY_COMMENTS,
+COG_COMMENTS,
+ASOFDATE
+)
+values(:1,:2,:3,to_char(to_date(:4,'Month YYYY'),'YYYYMM'),:5,:6,:7,:8,:9,:10,:11,:12,:13,:14,:15,:16,:17,:18,:19,:20,:21,:22,:23,:24,:25,:26,:27,:28,:29,:30,:31,:32,:33,:34,:35,:36,:37,:38,:39,:40,:41,:42,:43,trunc(SYSDATE))
+EOX
+prop:Script=<<EOX
+sqlNonSelect
+(
+  "{{^Query^}}",
+REASON_CODE,
+SUB_REASON_CODE,
+QUOTING_SYSTEM,
+MONTH_NAME,
+QUOTE_NUMBER,
+QUOTE_DATE,
+QUOTE_SOURCE,
+ENTITY_LINE_ITEM_ID,
+TRACKING_NUMBER,
+AMS_QUOTABLE,
+IS_UNIQUE,
+PRICING_TYPE,
+MRC,
+NRC,
+PRICETERMID,
+CURRENCYCODE,
+SOLUTION_ID,
+ROC_STATUS,
+GLM_ID,
+GLM_VALIDATION,
+GLM_ADDRESS_CREATED_BY,
+ADDR1,
+ADDR2,
+CITY,
+POST_CODE,
+COUNTRY_CODE,
+COUNTRY,
+REGION,
+BUDGETARY,
+DIVERSITY,
+CROSS_CONNECT,
+PRODUCT,
+LINE_ITEM_PRODUCT,
+BANDWIDTH,
+SUB_BANDWIDTH,
+DESCRIPTION,
+ENTITYTYPEID,
+VENDOR,
+PRODUCTTYPE,
+CONTROLLING_NETWORK,
+SI_COMMENTS,
+SI_DIVERSITY_COMMENTS,
+COG_COMMENTS
+)
+EOX
+editor:XY=510,160
+editor:propdef=Query|sql|1||None
+end:INSERT_INTO_IFO_FALLOUT_ARCHIVE
+
+node:IFO_Quotable_Fallout
+bretype:core::DB Query
+editor:Label=IFO Quotable Fallout
+editor:handle=5b645a6922364d31
+editor:sortkey=5b645a6922364d31
+output:@40fd2c7444283da6/=
+inclock:/=*
+encrypted:simple=nFZhmIpYZmvjMtRGF8lNF90Au1X/rz4=
+prop:DbService=GNIDEV1
+prop:DbUser=EMEA_AMS
+prop:SqlQuery=<<EOX
+select
+Reason_Code,
+Sub_Reason_Code,
+Quoting_System,
+MONTH_NAME,
+QUOTE_NUMBER,
+QUOTE_DATE,
+QUOTE_SOURCE,
+Entity_Line_Item_ID,
+tracking_number,
+AMS_Quotable,
+Is_Unique,
+Pricing_Type,
+MRC,
+NRC,
+pricetermid,
+CURRENCYCODE,
+Solution_ID,
+ROC_Status,
+GLM_ID,
+GLM_Validation,
+GLM_Address_Created_by,
+Addr1,
+Addr2,
+City,
+Post_Code,
+Country_Code,
+Country,
+Region,
+Budgetary,
+Diversity,
+Cross_Connect,
+Product,
+Line_Item_Product,
+Bandwidth,
+Sub_Bandwidth
+,Description
+,EntityTypeId
+,Vendor
+,producttype
+,Controlling_Network
+,SI_Comments
+,SI_Diversity_Comments
+,COG_Comments
+from IFO_Fallout_VW a
+where  exists (select 'x' from IFO_Fallout_VW b
+where b.tracking_number=a.tracking_number and b.producttype <> 'EoC')
+Union
+select
+'No AMS Pricing' "Reason_Code",
+Sub_Reason_Code,
+Quoting_System,
+MONTH_NAME,
+QUOTE_NUMBER,
+QUOTE_DATE,
+QUOTE_SOURCE,
+Entity_Line_Item_ID,
+tracking_number,
+AMS_Quotable,
+Is_Unique,
+Pricing_Type,
+MRC,
+NRC,
+pricetermid,
+CURRENCYCODE,
+Solution_ID,
+ROC_Status,
+GLM_ID,
+GLM_Validation,
+GLM_Address_Created_by,
+Addr1,
+Addr2,
+City,
+Post_Code,
+Country_Code,
+Country,
+Region,
+Budgetary,
+Diversity,
+Cross_Connect,
+Product,
+Line_Item_Product,
+Bandwidth,
+Sub_Bandwidth,
+Description,
+EntityTypeId,
+Vendor,
+producttype,
+Controlling_Network,
+SI_Comments,
+SI_Diversity_Comments,
+COG_Comments
+from IFO_Fallout_vw a
+where CAST(sub_bandwidth AS INT) > 10
+and  not exists (select 'x' from IFO_Fallout_VW b
+where b.tracking_number=a.tracking_number and b.producttype <> 'EoC')
+union
+select
+Reason_Code,
+Sub_Reason_Code,
+Quoting_System,
+MONTH_NAME,
+QUOTE_NUMBER,
+QUOTE_DATE,
+QUOTE_SOURCE,
+Entity_Line_Item_ID,
+tracking_number,
+AMS_Quotable,
+Is_Unique,
+Pricing_Type,
+MRC,
+NRC,
+pricetermid,
+CURRENCYCODE,
+Solution_ID,
+ROC_Status,
+GLM_ID,
+GLM_Validation,
+GLM_Address_Created_by,
+Addr1,
+Addr2,
+City,
+Post_Code,
+Country_Code,
+Country,
+Region,
+Budgetary,
+Diversity,
+Cross_Connect,
+Product,
+Line_Item_Product,
+Bandwidth,
+Sub_Bandwidth,
+Description,
+EntityTypeId,
+Vendor,
+producttype,
+Controlling_Network,
+SI_Comments,
+SI_Diversity_Comments,
+COG_Comments
+from IFO_Fallout_VW a
+where CAST(sub_bandwidth AS INT) < =  10
+and not exists  (select 'x' from IFO_Fallout_VW b
+where b.tracking_number=a.tracking_number and b.producttype <> 'EoC')
+
+EOX
+editor:XY=350,160
+end:IFO_Quotable_Fallout
+
+end:IFO_Quotable_Data
+
+node:AMS_Quotable_Data
+bretype:core::Composite
+editor:Label=AMS Quotable Data
+editor:handle=5dfbfca13ba85d6f
+editor:sortkey=5dfbfca13ba85d6f
+inclock:/=IFO_Quotable_Data
+inclockxy:Inclock=110,50
+outclockxy:Outclock=230,50
+ineventxy:InEvent=20,200
+outeventxy:OutEvent=400,200
+editor:XY=610,170
+node:INSERT_INTO_IFO_FALLOUT_ARCHIVE
+bretype:core::DB Execute
+editor:Label=INSERT INTO IFO_FALLOUT_ARCHIVE
+editor:handle=5dfbe699721117a9
+editor:sortkey=589034931f3c79f3_12
+input:589034fa78ca3f43/out1=AMS_Quotable_Fallout.40fd2c7444283da6
+prop:CommitFrequency=10000
+prop:DbInterface={{^EMEA_DEV1_DB_INTERFACE^}}
+encrypted:simple=nFZhmIpYZmvjMtRGF8lNF8JPgXLTznUZdCHZKKmdqEwCPHXbp8rf0q5nfic=
+prop:DbService={{^EMEA_DEV1_DB_SERVICE^}}
+prop:DbUser={{^EMEA_DEV1_DB_USER^}}
+prop:Query=<<EOX
+insert into IFO_FALLOUT_ARCHIVE
+(
+PRODUCTTYPE,
+REASON_CODE,
+SUB_REASON_CODE,
+QUOTING_SYSTEM,
+MONTH_NAME,
+QUOTE_NUMBER,
+QUOTE_DATE,
+QUOTE_SOURCE,
+ENTITY_LINE_ITEM_ID,
+TRACKING_NUMBER,
+AMS_QUOTABLE,
+IS_UNIQUE,
+PRICING_TYPE,
+MRC,
+NRC,
+PRICETERMID,
+CURRENCYCODE,
+SOLUTION_ID,
+ROC_STATUS,
+GLM_ID,
+GLM_VALIDATION,
+GLM_ADDRESS_CREATED_BY,
+ADDR1,
+ADDR2,
+CITY,
+POST_CODE,
+COUNTRY_CODE,
+COUNTRY,
+REGION,
+BUDGETARY,
+DIVERSITY,
+CROSS_CONNECT,
+PRODUCT,
+LINE_ITEM_PRODUCT,
+BANDWIDTH,
+SUB_BANDWIDTH,
+DESCRIPTION,
+ENTITYTYPEID,
+VENDOR,
+CONTROLLING_NETWORK,
+SI_COMMENTS,
+SI_DIVERSITY_COMMENTS,
+COG_COMMENTS,
+ASOFDATE
+)
+values(:1,:2,:3,:4,to_char(to_date(:5,'Month YYYY'),'YYYYMM'),:6,:7,:8,:9,:10,:11,:12,:13,:14,:15,:16,:17,:18,:19,:20,:21,:22,:23,:24,:25,:26,:27,:28,:29,:30,:31,:32,:33,:34,:35,:36,:37,:38,:39,:40,:41,:42,:43,trunc(SYSDATE))
+EOX
+prop:Script=<<EOX
+sqlNonSelect
+(
+  "{{^Query^}}",
+PRODUCTTYPE,
+REASON_CODE,
+SUB_REASON_CODE,
+QUOTING_SYSTEM,
+MONTH_NAME,
+QUOTE_NUMBER,
+QUOTE_DATE,
+QUOTE_SOURCE,
+ENTITY_LINE_ITEM_ID,
+TRACKING_NUMBER,
+AMS_QUOTABLE,
+IS_UNIQUE,
+PRICING_TYPE,
+MRC,
+NRC,
+PRICETERMID,
+CURRENCYCODE,
+SOLUTION_ID,
+ROC_STATUS,
+GLM_ID,
+GLM_VALIDATION,
+GLM_ADDRESS_CREATED_BY,
+ADDR1,
+ADDR2,
+CITY,
+POST_CODE,
+COUNTRY_CODE,
+COUNTRY,
+REGION,
+BUDGETARY,
+DIVERSITY,
+CROSS_CONNECT,
+PRODUCT,
+LINE_ITEM_PRODUCT,
+BANDWIDTH,
+SUB_BANDWIDTH,
+DESCRIPTION,
+ENTITYTYPEID,
+VENDOR,
+CONTROLLING_NETWORK,
+SI_COMMENTS,
+SI_DIVERSITY_COMMENTS,
+COG_COMMENTS
+)
+EOX
+editor:XY=510,210
+editor:propdef=Query|sql|1||None
+end:INSERT_INTO_IFO_FALLOUT_ARCHIVE
+
+node:AMS_Quotable_Fallout
+bretype:core::DB Query
+editor:Label=AMS Quotable Fallout
+editor:handle=5dfbe699279611bf
+editor:sortkey=5b645a6922364d31
+output:@40fd2c7444283da6/=
+prop:DbInterface={{^EMEA_DEV1_DB_INTERFACE^}}
+encrypted:simple=nFZhmIpYZmvjMtRGF8lNF8JPgXLTznUZdCHZKKmdqEwCPHXbp8rf0q5nfic=
+prop:DbService={{^EMEA_DEV1_DB_SERVICE^}}
+prop:DbUser={{^EMEA_DEV1_DB_USER^}}
+prop:SqlQuery=<<EOX
+select 
+PRODUCTTYPE,
+REASON_CODE,
+SUB_REASON_CODE,
+QUOTING_SYSTEM,
+MONTH_NAME,
+QUOTE_NUMBER,
+QUOTE_DATE,
+QUOTE_SOURCE,
+ENTITY_LINE_ITEM_ID,
+TRACKING_NUMBER,
+AMS_QUOTABLE,
+IS_UNIQUE,
+PRICING_TYPE,
+MRC,
+NRC,
+PRICETERMID,
+CURRENCYCODE,
+SOLUTION_ID,
+ROC_STATUS,
+GLM_ID,
+GLM_VALIDATION,
+GLM_ADDRESS_CREATED_BY,
+ADDR1,
+ADDR2,
+CITY,
+POST_CODE,
+COUNTRY_CODE,
+COUNTRY,
+REGION,
+BUDGETARY,
+DIVERSITY,
+CROSS_CONNECT,
+PRODUCT,
+LINE_ITEM_PRODUCT,
+BANDWIDTH,
+SUB_BANDWIDTH,
+DESCRIPTION,
+ENTITYTYPEID,
+VENDOR,
+CONTROLLING_NETWORK,
+SI_COMMENTS,
+SI_DIVERSITY_COMMENTS,
+COG_COMMENTS
+from SM_FALLOUT_VW a
+
+EOX
+editor:XY=350,210
+end:AMS_Quotable_Fallout
+
+end:AMS_Quotable_Data
+
+end:Stage_90_AutoQuote_Fallout_Report_Data
+
+box:
+label:90% Auto-Quote Fallout Report Requirements
+rect:100,210,510,40
+backgroundcolor:13434879
+editor:notes=90% Auto-Quote Fallout Report Requirements
+end:
